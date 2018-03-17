@@ -1,0 +1,35 @@
+
+                                     ucmaze
+
+What is it?
+-----------
+ucmaze is a suite for embedded systems, intended to provide a very well known
+software/firmware base, intensively tested and benchmarked so it can be adapted
+to new software pieces, such as new OSs or frameworks. Its main purpose is to
+stay simple and allow adding new simple features and check the impact on the
+system overall by profiling, debugging, etc.
+
+Latest version
+--------------
+ucmaze is hosted on Github, more concretely in the address
+https://github.com/jmtorrespalma/ucmaze.git.
+
+Licensing
+---------
+See the file accompanying this project called COPYING. Basically all the code,
+except where stated differently, is released under GPLv3.
+
+Documentation
+-------------
+There is no better documentation that the code itself. However, some markdown
+documentation is expected to be released in the future.
+
+Building
+--------
+Build system is based on make and Kconfig.
+
+Usage
+-----
+TODO
+
+Copyright (C) 2018 Juan Manuel Torres Palma <j.m.torrespalma@gmail.com>
