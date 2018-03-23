@@ -1,3 +1,4 @@
+ENTRY(_start)
 MEMORY
 {
   ROM (rx)  : ORIGIN = 0x00100000, LENGTH = 0x00010000
@@ -9,7 +10,6 @@ SECTIONS
 	.text :
 	{
 		KEEP(*(.init))
-		*(.text .text.*)                   /* remaining code */
 		. = ALIGN(4);
 	} >ROM
 }
