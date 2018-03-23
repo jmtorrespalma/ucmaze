@@ -1,26 +1,26 @@
-#   Copyright (C) 2018 Juan Manuel Torres Palma <j.m.torrespalma@gmail.com>
-#   This file is part of ucmaze.
+# Copyright (C) 2018 Juan Manuel Torres Palma <j.m.torrespalma@gmail.com>
+# This file is part of ucmaze.
 #
-#   ucmaze is free software: you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation, either version 3 of the License, or
-#   (at your option) any later version.
+# ucmaze is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-#   ucmaze is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
+# ucmaze is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-#   You should have received a copy of the GNU General Public License
-#   along with ucmaze.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU General Public License
+# along with ucmaze.  If not, see <http://www.gnu.org/licenses/>.
 
-# Makefile to build blinky-asm
+# Makefile template for embedded builds
 
-# Define cross toolchain prefix
+# Define project specific variables
 CROSS_COMPILE := arm-none-eabi
 CPU := arm7tdmi
-
 TARGET := blinky-asm
+VERSION := v0.1
 
 # Set all the flags
 CFLAGS = -mcpu=$(CPU)
@@ -31,21 +31,28 @@ CFLAGS += -g -0g
 CFLAGS += -ffunction-sections -fdata-sections -ffreestanding
 
 ASFLAGS = -mcpu=$(CPU)
+ASFLAGS += -g
 ASFLAGS += -x assembler-with-cpp
 
+LDSCRIPT := at91sam7s64.ld
 LDFLAGS = -nostartfiles -nostdlib
 LDFLAGS += -Wl,-Map=$(TARGET).map,--cref,--gc-sections
 LDFLAGS += -lgcc
-LDFLAGS +=-Tat91sam7s64.ld
+LDFLAGS +=-T$(LDSCRIPT)
 
 # Define programs and commands.
-CC = $(CROSS_COMPILE)-gcc
-CPP = $(CROSS_COMPILE)-g++
-OBJCOPY = $(CROSS_COMPILE)-objcopy
-OBJDUMP = $(CROSS_COMPILE)-objdump
-SIZE = $(CROSS_COMPILE)-size
-NM = $(CROSS_COMPILE)-nm
-OPENOCD = openocd
+CC := $(CROSS_COMPILE)-gcc
+CPP := $(CROSS_COMPILE)-g++
+OBJCOPY := $(CROSS_COMPILE)-objcopy
+OBJDUMP := $(CROSS_COMPILE)-objdump
+SIZE := $(CROSS_COMPILE)-size
+NM := $(CROSS_COMPILE)-nm
+GDB := $(CROSS_COMPILE)-gdb
+OPENOCD := openocd
+RM := rm -f
+KILL := pkill
+TAR := tar
+INDENT := indent
 
 # Program files
 SRC := $(wildcard *.c)
@@ -53,32 +60,49 @@ ASRC += $(wildcard *.S)
 OBJ := $(SRC:.c=.o) $(ASRC:.S=.o)
 INC := $(wildcard *.h)
 
-# Default targets
+# Implicit rules
 %.o: %.c
 	$(CC) -c $(CFLAGS) -I. $< -o $@
 
 %.o: %.S
 	$(CC) -c $(ASFLAGS) -I. $< -o $@
 
+%.elf: $(OBJ)
+	$(CC) -o $@ $^ $(LDFLAGS)
+
 %.bin: %.elf
 	$(OBJCOPY) -O binary $< $@
 
-# Final target
-$(TARGET).elf: $(OBJ)
-	$(CC) -o $@ $^ $(LDFLAGS)
+# Avoid removing intermediate files
+.PRECIOUS: %.o %.elf
 
-# Flash with openocd
-flash: $(TARGET).bin
-	$(OPENOCD) -f openocd-flash.cfg
-
-.PHONY: all default clean format
-
-default: all
-
+# Default rule
+.PHONY: all flash debug format clean
 all: $(TARGET).bin
 
-format:
-	indent -linux $(SRC)
+# Flash with openocd
+CONNECT_CFG := connect.cfg
+FLASH_CFG := flash.cfg
+flash: $(TARGET).bin
+	$(OPENOCD) -f $(CONNECT_CFG) -f $(FLASH_CFG)
 
+# Start debugging session
+DEBUG_SCRIPT := debug.gdb
+debug:
+	$(KILL) $(OPENOCD)
+	$(OPENOCD) -f $(CONNECT_CFG) &
+	$(GDB) -x $(DEBUG_SCRIPT)
+
+# Make C code look pretty
+format:
+	$(INDENT) -linux $(SRC)
+
+# Clean up temporary files
 clean:
-	rm -rf $(OBJ) *.elf *.bin *.map *~
+	$(RM) $(OBJ) *.elf *.bin *.map *.tgz *~
+
+# Package distribution
+BUILD_DIST := $(SRC) $(ASRC) $(INC) $(LDSCRIPT) Makefile
+EXTRA_DIST := $(CONNECT_CFG) $(FLASH_CFG) $(DEBUG_SCRIPT)
+dist: clean
+	$(TAR) -czvf $(TARGET)-$(VERSION).tgz $(BUILD_DIST) $(EXTRA_DIST)
