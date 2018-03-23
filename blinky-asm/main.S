@@ -22,21 +22,18 @@
 
 	.arm
 	.section .init, "ax"
-	.global _startup
-	.func   _startup
+	.global _start
+	.func   _start
 
-_startup:
-	# Pseudo instructions only valid in same section
-	ldr	r1, =PIO_OER
-	#ldr	r1, [r0]
-	mov	r2, #PIN
-	str	r2, [r1]
+_start:
+	ldr	r0, enable_addr
+	mov	r1, #PIN
+	str	r1, [r0]
 
         b	.
 
-        .size   _startup, . - _startup
+        .size   _start, . - _start
         .endfunc
 
-# These are variables
+# This is a constant
 enable_addr:	.word  PIO_OER
-set_addr:	.word  PIO_SODR
