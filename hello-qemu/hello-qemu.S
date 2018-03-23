@@ -4,6 +4,11 @@
 # The serial controller works the following way:
 # - SERIAL_BASE is where we write our bytes.
 # - SERIAL_FLAG_REGISTER contains flags like full buffer.
+#
+# Registers:
+# - r0: SERIAL_BASE
+# - r1: SERIAL_BUFFER_FULL
+# - r2: msg pointer
 
 #define SERIAL_BASE            0x16000000
 #define SERIAL_FLAG_REGISTER   0x18
@@ -17,23 +22,27 @@
 _start:
 	# Load addresses
 	mov	r0, #SERIAL_BASE
-	mov	r1, #0
-	add	r1, r1, #SERIAL_FLAG_REGISTER
-	ldr	r2, =msg
+	mov	r1, #SERIAL_BUFFER_FULL
+	mov	r2, #'A'
 
-	# Start writing loop
+	# Loop to check status
+check_status:
+	ldr	r3, [r0, #SERIAL_FLAG_REGISTER]
+	ands	r3, r3, r1
+	bne	check_status
 
-
+	# Write
+	str	r2, [r0]
 
 	# Loop forever
-        b	.
+        b	check_status
 
         .size   _start, . - _start
         .endfunc
 
 # This is constants area
 	.section .rodata
-msg:	.asciz  "hello from qemu"
+msg:	.asciz "hello from qemu"
 
 	# Marks the end of the file
 	.end
