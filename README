@@ -12,7 +12,11 @@ system overall by profiling, debugging, etc.
 Latest version
 --------------
 ucmaze is hosted on Github, more concretely in the address
-https://github.com/jmtorrespalma/ucmaze.git.
+https://github.com/jmtorrespalma/ucmaze.git
+
+Be aware that development style is the classic master-devel-feat style, so
+master is the branch to keep stable changes and tags, while devel is
+continuously under heavy development.
 
 Licensing
 ---------
@@ -26,10 +30,23 @@ documentation is expected to be released in the future.
 
 Building
 --------
-Build system is based on make and Kconfig.
+Build system is based on make, gcc, openocd, qemu and gdb. It's very portable,
+but expects some tweaking in terms of setting cross compilation toolchains,
+flashing tools and debugging.
 
-Usage
------
-TODO
+This project is targeted for GNU/Linux hosts, but it should work smoothly in
+another platforms such as Android or Cygwin.
+
+Testing
+-------
+A testsuite is provided for developers to test new introduced changes and
+effects of refactoring. This can be run with "make check". However, it's still
+not available.
+
+Contributing
+------------
+Juan Manuel Torres Palma <j.m.torrespalma@gmail.com> is the main (and only)
+maintainer of the project, but open to external contributions coming in form of
+patch or pull request.
 
 Copyright (C) 2018 Juan Manuel Torres Palma <j.m.torrespalma@gmail.com>
