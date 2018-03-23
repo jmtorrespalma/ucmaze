@@ -16,24 +16,37 @@
 # PIO_SODR (offset = 0x30) sets the actual value of the pin.
 
 #define PIO       0xfffff400
-#define PIO_OER   0xfffff410
-#define PIO_SODR  0xfffff430
+#define PIO_OER   0x10
+#define PIO_SODR  0x30
+#define PIO_CODR  0x34
 #define PIN       0x00020000
+#define DELAY     0x00001000
 
 	.arm
 	.section .init, "ax"
 	.global _start
 	.func   _start
 
+	# Enable the pin as output
 _start:
-	ldr	r0, enable_addr
+	ldr	r0, =PIO
 	mov	r1, #PIN
-	str	r1, [r0]
+	str	r1, [r0, #PIO_OER]
 
-        b	.
+turn_on:
+	mov	r3, #DELAY
+	str	r1, [r0, #PIO_CODR]
+0:
+	subs	r3, r3, #1
+	bne	0b
+
+turn_off:
+	mov	r3, #DELAY
+	str	r1, [r0, #PIO_SODR]
+1:
+	subs	r3, r3, #1
+	bne	1b
+        b	turn_on
 
         .size   _start, . - _start
         .endfunc
-
-# This is a constant
-enable_addr:	.word  PIO_OER
