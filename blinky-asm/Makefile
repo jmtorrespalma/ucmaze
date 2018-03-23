@@ -88,10 +88,10 @@ flash: $(TARGET).bin
 
 # Start debugging session
 DEBUG_SCRIPT := debug.gdb
-debug:
+debug: $(TARGET).elf
+	$(OPENOCD) -f $(CONNECT_CFG) -c "init" -c "soft_reset_halt" &
+	$(GDB) -x $(DEBUG_SCRIPT) $<
 	$(KILL) $(OPENOCD)
-	$(OPENOCD) -f $(CONNECT_CFG) &
-	$(GDB) -x $(DEBUG_SCRIPT)
 
 # Make C code look pretty
 format:
@@ -104,5 +104,5 @@ clean:
 # Package distribution
 BUILD_DIST := $(SRC) $(ASRC) $(INC) $(LDSCRIPT) Makefile
 EXTRA_DIST := $(CONNECT_CFG) $(FLASH_CFG) $(DEBUG_SCRIPT)
-dist: clean
+dist:
 	$(TAR) -czvf $(TARGET)-$(VERSION).tgz $(BUILD_DIST) $(EXTRA_DIST)
