@@ -21,6 +21,8 @@ CROSS_COMPILE := arm-none-eabi
 CPU := arm7tdmi
 TARGET := blinky-asm
 VERSION := v0.1
+ROOT_DIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
+VPATH := $(ROOT_DIR)
 
 # Set all the flags
 CFLAGS = -mcpu=$(CPU)
@@ -38,7 +40,7 @@ LDSCRIPT := at91sam7s64.ld
 LDFLAGS = -nostartfiles -nostdlib
 LDFLAGS += -Wl,-Map=$(TARGET).map,--cref,--gc-sections
 LDFLAGS += -lgcc
-LDFLAGS +=-T$(LDSCRIPT)
+LDFLAGS += -T$(LDSCRIPT)
 
 # Define programs and commands.
 CC := $(CROSS_COMPILE)-gcc
@@ -71,13 +73,13 @@ INC := $(wildcard *.h)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 %.bin: %.elf
-	$(OBJCOPY) -O binary $< $@
+	$(OBJCOPY) --strip-unneeded -O binary $< $@
 
 # Avoid removing intermediate files
 .PRECIOUS: %.o %.elf
 
 # Default rule
-.PHONY: all flash debug format clean
+.PHONY: all flash debug size format clean
 all: $(TARGET).bin
 
 # Flash with openocd
@@ -92,6 +94,10 @@ debug: $(TARGET).elf
 	$(OPENOCD) -f $(CONNECT_CFG) -c "init" -c "soft_reset_halt" &
 	$(GDB) -x $(DEBUG_SCRIPT) $<
 	$(KILL) $(OPENOCD)
+
+# Show executable size
+size: $(TARGET).elf
+	$(SIZE) $<
 
 # Make C code look pretty
 format:
