@@ -28,10 +28,9 @@ _start:
 	ldr	r2, =msg
 
 load_char:
-	ldrb	r3, [r2]
+	ldrb	r3, [r2], #1
 	cmp	r3, #0
 	beq	end
-	add	r2, r2, #1
 
 	# Loop to check status
 check_status:
