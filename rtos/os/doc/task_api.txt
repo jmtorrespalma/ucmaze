@@ -1,0 +1,22 @@
+We only provide very simple API to create threads and independent tasks.
+This is a very initial version, and here I will cover the design.
+
+It's important to note that all of this functions are system calls, so they run
+in kernel mode, and modify kernel data structures.
+
+task_create(int prio, void *entry, int argc, void *argv)
+- task_alloc()
+- assign_stack(): assigns a stack pointer so can start running
+- context_init(): machine dependent create a context, like setting parameters,
+  return addresses, so once its scheduled it runs fine. It's important to set
+  return address to task_destroy(), so we can free resources.
+- task_link(): adds new created task to the system task_head sorted list.
+- return to userspace
+
+task_yield()
+
+task_sleep()
+
+We have a problem with same priority scheduling, since only one of them will
+run.
+

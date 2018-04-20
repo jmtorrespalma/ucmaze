@@ -1,0 +1,13 @@
+Every access from userspace to the kernel should be done through a syscall, and
+only very few functions are exposed to userspace, only those required.
+
+In implementation details, all syscalls are implemented in functions prefixed
+by sys_NAME(). The public API are simply wrappers, that set the arguments
+correctly and raise a software interrupt.
+
+Syscalls
+--------
+task_create()
+task_exit()
+irq_lock()
+irq_unlock()
