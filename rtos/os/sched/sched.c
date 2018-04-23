@@ -22,9 +22,6 @@
 #include <syscall-sys.h>
 #include <util/list.h>
 
-/* Forward declaration of main so it runs after user defines it */
-extern int main(void);
-
 /*
  * Queue containing all system tasks
  */
@@ -39,18 +36,32 @@ extern struct task task_mem[TASK_N_MAX];
 struct task *task_current;
 
 /*
+ * Initialize structures used by the scheduler.
+ */
+void sched_mem_init(void)
+{
+	char *ustack_ptr = &_ustack_top; /* Accessing linker symbol */
+
+	for (int i = 0; i < TASK_N_MAX; ++i) {
+		task_mem[i].state = TASK_FINISHED;
+		task_mem[i].stack_top = ustack_ptr - STACK_SZ * i;
+	}
+}
+
+/*
+ * Forward declaration of main, this is necessary for the first task on the os
+ * to run it, either if it's multitask or single task application.
+ */
+extern int main(void);
+
+/*
  * Initialize internal data required for scheduling
  */
 int sched_init(void)
 {
 	int rv;
-	char *ustack_ptr = &_ustack_top; /* Accessing linker symbol */
 
-	/* Initialize task_mem */
-	for (int i = 0; i < TASK_N_MAX; ++i) {
-		task_mem[i].state = TASK_FINISHED;
-		task_mem[i].stack_top = ustack_ptr - STACK_SZ * i;
-	}
+	sched_mem_init();
 
 	/* If single task, must run the main function */
 	rv = sys_task_create(200, main, 0, NULL);
@@ -65,7 +76,7 @@ int sched_init(void)
 
 	/*
 	 * Here we pick the first task and fake it as if it was running before
-	 * so when we call the context switch can restore the context properly.
+	 * so when we return to usermode, this task will start running.
 	 */
 	task_current = sched_get_next();
 	context_fake(task_current);

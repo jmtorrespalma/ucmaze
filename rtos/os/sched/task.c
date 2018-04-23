@@ -156,9 +156,11 @@ int sys_task_exit(int exit_code)
 	sched_dequeue(task_current);
 	task_free(task_current->id);
 
+	/*
+	 * Context switch is done smoothly here
+	 */
 	task_current = sched_get_next();
 	context_fake(task_current);
-	sched_need_resched();
 
 	sys_irq_unlock(key);
 

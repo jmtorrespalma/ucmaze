@@ -33,9 +33,12 @@ void sys_os_init(void)
 
 	key = sys_irq_lock();
 
+	/*
+	 * Add default tasks, select initial task and switch on the system
+	 * ticker so we can start running userspace tasks.
+	 */
 	sched_init();
 	ticker_init(TICKER_FREQ);
-	sched_need_resched();
 
 	sys_irq_unlock(key);
 }
