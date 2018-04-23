@@ -32,9 +32,6 @@ extern struct task *task_current;
  */
 void ticker_handler(void)
 {
-	struct task *next;
-
 	sched_need_resched();
-
 	++jiffies;
 }

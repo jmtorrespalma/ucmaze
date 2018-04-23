@@ -28,12 +28,12 @@
 LIST_HEAD(task_list);
 
 extern char _ustack_top;
-extern struct task task_mem[TASK_N_MAX];
 
 /*
  * Current task set to run.
  */
 struct task *task_current;
+struct task task_mem[TASK_N_MAX];
 
 /*
  * Initialize structures used by the scheduler.
@@ -85,34 +85,25 @@ int sched_init(void)
 }
 
 /*
- * Currently just picks the thread ready with highest priority
+ * Round-robin, ignoring priority
+ * Need to watchout for non-ready tasks.
+ *
+ * Should be called only once per tick cycle.
  */
 struct task *sched_get_next(void)
 {
-	struct task *it, *next = NULL;;
-	static int order = 0;
+	struct task *last, *next = NULL;
 
-	if (order)
-		list_for_each_entry(it, &task_list, le) {
-			if (it->state == TASK_READY) {
-				if (!next)
-					next = it;
-				else if (it->prio < next->prio)
-					next = it;
-			}
-		}
-	else
-		list_for_each_entry_reverse(it, &task_list, le) {
-			if (it->state == TASK_READY) {
-				if (!next)
-					next = it;
-				else if (it->prio < next->prio)
-					next = it;
-			}
-		}
+	if (!task_current)
+		next = list_first_entry(&task_list, struct task, le);
+	else {
+		last = list_last_entry(&task_list, struct task, le);
 
-
-	order = !order;
+		if (last != task_current)
+			next = list_next_entry(task_current, le);
+		else
+			next = list_first_entry(&task_list, struct task, le);
+	}
 
 	return next;
 }

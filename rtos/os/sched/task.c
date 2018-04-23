@@ -27,9 +27,9 @@
  * Global array to keep kernel tasks, it provides the memory, while list
  * entries provide the logic.
  */
-struct task task_mem[TASK_N_MAX];
-extern struct list_head task_list; /* Sorted list */
+extern struct task task_mem[TASK_N_MAX];
 extern struct task *task_current;
+extern struct list_head task_list; /* Sorted list */
 
 /*
  * Handle in kernel container of tasks.
