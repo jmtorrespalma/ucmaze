@@ -31,6 +31,7 @@ SECTIONS
 		. = ALIGN(4);
 		KEEP(*(.init))
 		. = ALIGN(4);
+		ucmaze-os.a:*(.text*)
 		*(.text*)
 		. = ALIGN(4);
 	} > ROM
