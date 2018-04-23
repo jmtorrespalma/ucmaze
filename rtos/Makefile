@@ -22,20 +22,22 @@ ARCH := arm
 CPU := cortex-m0
 SOC := stm32f051
 BOARD := stm32f0discovery
-TARGET := ucmaze-os
+KERNEL := ucmaze-os
+TARGET := blinky-parallel
 VERSION := v0.1
 
 # Directories
 ROOT_DIR := .
 OS_DIR := $(ROOT_DIR)/os
-APP_DIR := $(ROOT_DIR)/os
+APP_DIR := $(ROOT_DIR)/app
 KSRCD := include sched init util
 KERNEL_DIRS := $(foreach dir, $(KSRCD), $(OS_DIR)/$(dir))
 DEBUG_DIR := $(OS_DIR)/debug
 BOARD_DIR := $(OS_DIR)/arch/$(ARCH)/board/$(BOARD)
 CPU_DIR := $(OS_DIR)/arch/$(ARCH)/cpu/$(CPU)
 SOC_DIR := $(OS_DIR)/arch/$(ARCH)/soc/$(SOC)
-ALL_SRC_DIRS := $(KERNEL_DIRS) $(BOARD_DIR) $(CPU_DIR) $(SOC_DIR) $(APP_DIR)
+K_SRC_DIRS := $(KERNEL_DIRS) $(BOARD_DIR) $(CPU_DIR) $(SOC_DIR)
+A_SRC_DIRS := $(APP_DIR)
 
 # Other files
 LDSCRIPT := $(SOC_DIR)/linker.ld
@@ -65,6 +67,7 @@ LDFLAGS += -T$(LDSCRIPT)
 # Define programs and commands.
 CC := $(CROSS_COMPILE)-gcc
 CPP := $(CROSS_COMPILE)-g++
+AR := $(CROSS_COMPILE)-ar
 OBJCOPY := $(CROSS_COMPILE)-objcopy
 OBJDUMP := $(CROSS_COMPILE)-objdump
 SIZE := $(CROSS_COMPILE)-size
@@ -76,11 +79,18 @@ KILL := pkill
 TAR := tar
 INDENT := indent
 
-# Program files
-SRC := $(shell find $(ALL_DIRS) -name "*.c")
-INC := $(shell find $(ALL_DIRS) -name "*.h")
-ASRC := $(shell find $(ALL_DIRS) -name "*.S")
-OBJ := $(SRC:.c=.o) $(ASRC:.S=.o)
+# Kernel files
+K_SRC := $(shell find $(K_SRC_DIRS) -name "*.c")
+K_INC := $(shell find $(K_SRC_DIRS) -name "*.h")
+K_ASRC := $(shell find $(K_SRC_DIRS) -name "*.S")
+K_OBJ := $(K_SRC:.c=.o) $(K_ASRC:.S=.o)
+KLIB := $(KERNEL).a
+
+# App files
+A_SRC := $(shell find $(A_SRC_DIRS) -name "*.c")
+A_INC := $(shell find $(A_SRC_DIRS) -name "*.h")
+A_ASRC := $(shell find $(A_SRC_DIRS) -name "*.S")
+A_OBJ := $(A_SRC:.c=.o) $(A_ASRC:.S=.o)
 
 # Implicit rules
 %.o: %.c
@@ -89,18 +99,24 @@ OBJ := $(SRC:.c=.o) $(ASRC:.S=.o)
 %.o: %.S
 	$(CC) -c $(ASFLAGS) $< -o $@
 
-%.elf: $(OBJ)
+%.elf: $(A_OBJ) $(KLIB)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 %.bin: %.elf
 	$(OBJCOPY) --strip-unneeded -O binary $< $@
 
 # Avoid removing intermediate files
-.PRECIOUS: %.o %.elf
+.PRECIOUS: %.o %.elf %.a
+
+# Non file rules
+.PHONY: all flash debug size format clean
 
 # Default rule
-.PHONY: all flash debug size format clean
 all: $(TARGET).bin
+
+# Kernel static object
+$(KLIB): $(K_OBJ)
+	$(AR) rcs $@ $^
 
 # Flash with openocd
 flash: $(TARGET).bin
@@ -122,7 +138,7 @@ format:
 
 # Clean up temporary files
 clean:
-	$(RM) $(OBJ) *.elf *.bin *.map *.tgz *~
+	$(RM) $(K_OBJ) $(A_OBJ) *.a *.elf *.bin *.map *.tgz *~
 
 # Package distribution
 BUILD_DIST := $(SRC) $(ASRC) $(INC) $(LDSCRIPT) Makefile
