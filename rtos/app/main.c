@@ -26,32 +26,22 @@
 #define PIN_GREEN  9
 #define DELAY      0x100000
 
-int toogle_blue_led(void)
+int toogle_led(int argc, unsigned int pin_number)
 {
-	while (1) {
-		*GPIO_ODR ^= 1 << PIN_BLUE;
-		for (int i = 0; i < DELAY; ++i);
-	}
-}
+	/* Set pin as output */
+	*GPIO_BASE |= (1 << (pin_number * 2));
 
-int toogle_green_led(void)
-{
 	while (1) {
-		*GPIO_ODR ^= 1 << PIN_GREEN;
+		*GPIO_ODR ^= 1 << pin_number;
 		for (int i = 0; i < DELAY; ++i);
 	}
 }
 
 int main(void)
 {
-
-	/* Set pins as output */
-	*GPIO_BASE |= (1 << (PIN_BLUE * 2));
-	*GPIO_BASE |= (1 << (PIN_GREEN * 2));
-
 	/* Create both threads */
-	task_create(20, toogle_blue_led, 0, 0);
-	task_create(20, toogle_green_led, 0, 0);
+	task_create(20, toogle_led, 1, (void *)PIN_BLUE);
+	task_create(20, toogle_led, 1, (void *)PIN_GREEN);
 
 	return 0;
 }
