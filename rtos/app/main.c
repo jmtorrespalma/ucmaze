@@ -26,7 +26,7 @@
 #define PIN_GREEN  9
 #define DELAY      0x100000
 
-int toogle_led(int argc, unsigned int pin_number)
+int toggle_led(int argc, unsigned int pin_number)
 {
 	/* Set pin as output */
 	*GPIO_BASE |= (1 << (pin_number * 2));
@@ -40,8 +40,8 @@ int toogle_led(int argc, unsigned int pin_number)
 int main(void)
 {
 	/* Create both threads */
-	task_create(20, toogle_led, 1, (void *)PIN_BLUE);
-	task_create(20, toogle_led, 1, (void *)PIN_GREEN);
+	task_create(20, toggle_led, 1, (void *)PIN_BLUE);
+	task_create(20, toggle_led, 1, (void *)PIN_GREEN);
 
 	return 0;
 }
