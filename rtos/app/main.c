@@ -22,26 +22,35 @@
 /* GPIO defines */
 #define GPIO_BASE  ((volatile uint32_t *)0x48000800)
 #define GPIO_ODR   ((volatile uint32_t *)0x48000814)
-#define PIN_BLUE   8
-#define PIN_GREEN  9
-#define DELAY      0x100000
+#define PIN_BLUE         8
+#define DELAY_BLUE       0x080000
+#define PIN_GREEN        9
+#define DELAY_GREEN      0x040000
 
-int toggle_led(int argc, unsigned int pin_number)
+unsigned int argv_green[] = {PIN_GREEN, DELAY_GREEN};
+unsigned int argv_blue[] = {PIN_BLUE, DELAY_BLUE};
+
+int toggle_led(int argc, unsigned int *argv)
 {
+	unsigned int pin, delay;
+
+	pin = argv[0];
+	delay = argv[1];
+
 	/* Set pin as output */
-	*GPIO_BASE |= (1 << (pin_number * 2));
+	*GPIO_BASE |= (1 << (pin * 2));
 
 	while (1) {
-		*GPIO_ODR ^= 1 << pin_number;
-		for (int i = 0; i < DELAY; ++i);
+		*GPIO_ODR ^= 1 << pin;
+		for (int i = 0; i < delay; ++i);
 	}
 }
 
 int main(void)
 {
 	/* Create both threads */
-	task_create(20, toggle_led, 1, (void *)PIN_BLUE);
-	task_create(20, toggle_led, 1, (void *)PIN_GREEN);
+	task_create(20, toggle_led, 2, argv_green);
+	task_create(20, toggle_led, 2, argv_blue);
 
 	return 0;
 }
