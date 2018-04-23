@@ -29,10 +29,8 @@ VERSION := v0.1
 ROOT_DIR := .
 OS_DIR := $(ROOT_DIR)/os
 APP_DIR := $(ROOT_DIR)/os
-KERNEL_DIRS := $(OS_DIR)/include
-KERNEL_DIRS += $(OS_DIR)/sched
-KERNEL_DIRS += $(OS_DIR)/init
-KERNEL_DIRS += $(OS_DIR)/util
+KSRCD := include sched init util
+KERNEL_DIRS := $(foreach dir, $(KSRCD), $(OS_DIR)/$(dir))
 DEBUG_DIR := $(OS_DIR)/debug
 BOARD_DIR := $(OS_DIR)/arch/$(ARCH)/board/$(BOARD)
 CPU_DIR := $(OS_DIR)/arch/$(ARCH)/cpu/$(CPU)
@@ -86,10 +84,10 @@ OBJ := $(SRC:.c=.o) $(ASRC:.S=.o)
 
 # Implicit rules
 %.o: %.c
-	$(CC) -c $(CFLAGS) -I. $< -o $@
+	$(CC) -c $(CFLAGS) $< -o $@
 
 %.o: %.S
-	$(CC) -c $(ASFLAGS) -I. $< -o $@
+	$(CC) -c $(ASFLAGS) $< -o $@
 
 %.elf: $(OBJ)
 	$(CC) -o $@ $^ $(LDFLAGS)
