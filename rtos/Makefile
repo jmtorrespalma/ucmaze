@@ -120,7 +120,8 @@ $(KLIB): $(K_OBJ)
 
 # Flash with openocd
 flash: $(TARGET).bin
-	$(OPENOCD) -f $(CONNECT_CFG) -f $(FLASH_CFG)
+	$(OPENOCD) -c "set PROGRAM \"$(TARGET).bin\"" -f $(CONNECT_CFG) \
+		-f $(FLASH_CFG)
 
 # Start debugging session
 debug: $(TARGET).elf
