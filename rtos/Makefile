@@ -18,12 +18,32 @@
 
 # Define project specific variables
 CROSS_COMPILE := arm-none-eabi
+ARCH := arm
 CPU := cortex-m0
 SOC := stm32f051
-BOARD := stm32f0disco
+BOARD := stm32f0discovery
 TARGET := ucmaze-os
 VERSION := v0.1
-ROOT_DIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
+
+# Directories
+ROOT_DIR := .
+OS_DIR := $(ROOT_DIR)/os
+APP_DIR := $(ROOT_DIR)/os
+KERNEL_DIRS := $(OS_DIR)/include
+KERNEL_DIRS += $(OS_DIR)/sched
+KERNEL_DIRS += $(OS_DIR)/init
+KERNEL_DIRS += $(OS_DIR)/util
+DEBUG_DIR := $(OS_DIR)/debug
+BOARD_DIR := $(OS_DIR)/arch/$(ARCH)/board/$(BOARD)
+CPU_DIR := $(OS_DIR)/arch/$(ARCH)/cpu/$(CPU)
+SOC_DIR := $(OS_DIR)/arch/$(ARCH)/soc/$(SOC)
+ALL_SRC_DIRS := $(KERNEL_DIRS) $(BOARD_DIR) $(CPU_DIR) $(SOC_DIR) $(APP_DIR)
+
+# Other files
+LDSCRIPT := $(SOC_DIR)/linker.ld
+CONNECT_CFG := board/$(BOARD).cfg
+FLASH_CFG := $(BOARD_DIR)/flash.cfg
+DEBUG_SCRIPT := $(DEBUG_DIR)/debug.gdb
 
 # Set all the flags
 CFLAGS = -mcpu=$(CPU)
@@ -32,13 +52,12 @@ CFLAGS += -Wpointer-arith -Wswitch
 CFLAGS += -Wredundant-decls -Wreturn-type -Wshadow -Wunused
 CFLAGS += -g -Og
 CFLAGS += -ffunction-sections -fdata-sections -ffreestanding
-CFLAGS += -I./os -I./os/include
+CFLAGS += -I$(OS_DIR) -I$(OS_DIR)/include
 
 ASFLAGS = -mcpu=$(CPU)
 ASFLAGS += -g
 ASFLAGS += -x assembler-with-cpp
 
-LDSCRIPT := os/soc/$(SOC)/linker.ld
 LDFLAGS = -mcpu=$(CPU)
 LDFLAGS += -nostartfiles -nostdlib
 LDFLAGS += -Wl,-Map=$(TARGET).map,--cref,--gc-sections
@@ -60,10 +79,10 @@ TAR := tar
 INDENT := indent
 
 # Program files
-SRC := $(shell find $(ROOT_DIR) -name "*.c")
-ASRC := $(shell find $(ROOT_DIR) -name "*.S")
+SRC := $(shell find $(ALL_DIRS) -name "*.c")
+INC := $(shell find $(ALL_DIRS) -name "*.h")
+ASRC := $(shell find $(ALL_DIRS) -name "*.S")
 OBJ := $(SRC:.c=.o) $(ASRC:.S=.o)
-INC := $(wildcard *.h)
 
 # Implicit rules
 %.o: %.c
@@ -86,13 +105,10 @@ INC := $(wildcard *.h)
 all: $(TARGET).bin
 
 # Flash with openocd
-CONNECT_CFG := board/stm32f0discovery.cfg
-FLASH_CFG := ./os/board/$(BOARD)/flash.cfg
 flash: $(TARGET).bin
 	$(OPENOCD) -f $(CONNECT_CFG) -f $(FLASH_CFG)
 
 # Start debugging session
-DEBUG_SCRIPT := ./os/debug/debug.gdb
 debug: $(TARGET).elf
 	$(OPENOCD) -f $(CONNECT_CFG) -c "init" -c "halt" &
 	$(GDB) -x $(DEBUG_SCRIPT) $<
