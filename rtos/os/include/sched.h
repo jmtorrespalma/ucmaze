@@ -39,13 +39,25 @@ struct task {
 	struct list_head le;
 };
 
+/*
+ * Scheduler calls.
+ */
 int sched_init(void);
+void sched_enqueue(struct task *t);
+void sched_dequeue(struct task *t);
 struct task *sched_get_next(void);
 void sched_need_resched(void);
 
-
+/*
+ * Wrapper around threads main function, used to setup the environment before,
+ * and the cleanup after finishing.
+ */
 void task_bootstrap(int argc, void *argv);
 
+/*
+ * Architecture dependent functions that setup data in a format expected by the
+ * cpu so it's able to load tasks or remove them.
+ */
 void context_init(struct task *t, int argc, void *argv);
 void context_fake(struct task *t);
 

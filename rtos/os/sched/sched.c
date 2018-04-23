@@ -105,3 +105,19 @@ struct task *sched_get_next(void)
 
 	return next;
 }
+
+/*
+ * Add new task to execution list.
+ */
+void sched_enqueue(struct task *t)
+{
+	list_add_tail(&t->le, &task_list);
+}
+
+/*
+ * Obviously will crash if task is not in the list.
+ */
+void sched_dequeue(struct task *t)
+{
+	list_del(&t->le);
+}

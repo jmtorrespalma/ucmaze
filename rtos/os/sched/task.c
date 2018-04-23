@@ -137,8 +137,7 @@ int sys_task_create(int prio, void *entry, int argc, void *argv)
 	new->stack_ptr = new->stack_top; /* Set at os_boot() */
 
 	context_init(new, argc, argv);
-
-	list_add_tail(&new->le, &task_list);
+	sched_enqueue(new);
 
 	sys_irq_unlock(key);
 
@@ -146,7 +145,7 @@ int sys_task_create(int prio, void *entry, int argc, void *argv)
 }
 
 /*
- * TODO: How to clean stack?
+ * Removes current thread and releases resources
  */
 int sys_task_exit(int exit_code)
 {
@@ -154,7 +153,7 @@ int sys_task_exit(int exit_code)
 
 	key = sys_irq_lock();
 
-	list_del(&task_current->le);
+	sched_dequeue(task_current);
 	task_free(task_current->id);
 
 	task_current = sched_get_next();
