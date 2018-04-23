@@ -24,24 +24,17 @@
 /*
  * Context switch is highly ABI and architecture dependent, so we stick to EABI
  * and regular exception model from cortex m0.
+ *
+ * Cortex-m0 context assumes that xPSR, PC, LR, R12, R3-R0 are already stacked
+ * in PSP and kernel kept r4-r11 unmodified.
  */
 
 /*
- * Assumes that xPSR, PC, LR, R12, R3-R0 are already stacked in PSP
- * and kernel kept r4-r11 unmodified
- */
-
-/*
- * Same as context_save(), but saves extra registers that usually are preserved
- * by the processor.
- * Also, lr must be set manually to EXC_RETURN.
- * Probably this function needs to be *always* inline, or totally in assembly.
+ * Used when we want to remove the context of the calling task (i.e. upon OS
+ * initialization or task exiting).
  *
- * This is called the first scheduling ever only, so the kernel when returning
- * to userspace has the expected context to restore the first task.
- *
- * Previous value of psp is lost, but that's ok since it was used for
- * initialization which is about to finish.
+ * Previous value of psp is lost, so need to make sure that stack is previously
+ * wiped out or overwritten.
  */
 void context_fake(struct task *t)
 {
@@ -59,12 +52,6 @@ void context_fake(struct task *t)
 /*
  * Populates this task stack, so when the scheduler picks it, can start running
  * such as if it was resumed.
- * r0: num of args
- * r1: pointer to args
- * pc: task_bootstrap()
- * psp: stack_top + sizeof(context)
- *
- * update stack variable.
  */
 void context_init(struct task *t, int argc, void *argv)
 {
@@ -94,6 +81,9 @@ void context_init(struct task *t, int argc, void *argv)
 	t->stack_ptr = stack_it;
 }
 
+/*
+ * Called when we want to save current task and get another to run.
+ */
 void sched_need_resched(void)
 {
 	volatile uint32_t *icsr = (uint32_t *)0xe000ed04;
