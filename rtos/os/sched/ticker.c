@@ -16,22 +16,7 @@
  * along with ucmaze.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <sched.h>
-
 /*
  * Number of timer ticks since boot.
  */
 unsigned int jiffies = 0;
-
-extern struct task *task_current;
-
-/*
- * High level ticker handler function.
- * Maybe better to only set a flag and switch somewhere else.
- * Check that no callee-saved register is pushed
- */
-void ticker_handler(void)
-{
-	sched_need_resched();
-	++jiffies;
-}
