@@ -18,6 +18,7 @@
 
 #include <stdint.h>
 #include <ucmaze-os.h>
+#include <kstdio.h>
 
 /* GPIO defines */
 #define GPIO_BASE  ((volatile uint32_t *)0x48000800)
@@ -51,6 +52,9 @@ int main(void)
 	/* Create both threads */
 	task_create(20, toggle_led, 2, argv_green);
 	task_create(20, toggle_led, 2, argv_blue);
+
+	/* Test stdout */
+	kputs("main() exiting");
 
 	return 0;
 }
