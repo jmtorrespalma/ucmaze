@@ -16,28 +16,9 @@
  * along with ucmaze.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <irq.h>
-#include <dev.h>
-#include <ticker.h>
-#include <sched.h>
+#ifndef DEV_H_
+#define DEV_H_
 
-/*
- * This needs to run in privileged mode.
- * Takes care of initializating all kernel data structures.
- */
-void sys_os_init(void)
-{
-	int key;
+void dev_init(void);
 
-
-	key = sys_irq_lock();
-
-	/*
-	 * Add default tasks, select initial task and switch on the system
-	 * devices so we can start running userspace tasks.
-	 */
-	sched_init();
-	dev_init();
-
-	sys_irq_unlock(key);
-}
+#endif /* DEV_H_ */

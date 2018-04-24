@@ -16,28 +16,21 @@
  * along with ucmaze.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <irq.h>
+#include <config.h>
 #include <dev.h>
+#include <uart.h>
 #include <ticker.h>
-#include <sched.h>
+
+extern struct uart_dev uart_std;
 
 /*
- * This needs to run in privileged mode.
- * Takes care of initializating all kernel data structures.
+ * Initialization of default devices, uart_std and system ticker.
  */
-void sys_os_init(void)
+void dev_init(void)
 {
-	int key;
+	struct uart_conf std_conf = {.status = UART_STATUS_EN,
+				     .baudrate = TTY_BR};
 
-
-	key = sys_irq_lock();
-
-	/*
-	 * Add default tasks, select initial task and switch on the system
-	 * devices so we can start running userspace tasks.
-	 */
-	sched_init();
-	dev_init();
-
-	sys_irq_unlock(key);
+	uart_set_config(&uart_std, &std_conf);
+	ticker_init(TICKER_FREQ);
 }

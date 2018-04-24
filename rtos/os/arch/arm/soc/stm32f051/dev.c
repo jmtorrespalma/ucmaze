@@ -16,28 +16,18 @@
  * along with ucmaze.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <irq.h>
-#include <dev.h>
-#include <ticker.h>
-#include <sched.h>
+#include <config.h>
+#include <uart.h>
+#include "dev-def.h"
 
 /*
- * This needs to run in privileged mode.
- * Takes care of initializating all kernel data structures.
+ * Used for kgets() and kputs()
  */
-void sys_os_init(void)
-{
-	int key;
-
-
-	key = sys_irq_lock();
-
-	/*
-	 * Add default tasks, select initial task and switch on the system
-	 * devices so we can start running userspace tasks.
-	 */
-	sched_init();
-	dev_init();
-
-	sys_irq_unlock(key);
-}
+struct uart_dev uart_std = {
+	.id = (int) USART1_BASE,
+	.type = UART_TRINTS,
+	.conf = {
+		.status = 0,
+		.baudrate = 0
+	}
+};

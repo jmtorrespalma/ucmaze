@@ -19,4 +19,6 @@
 #define CPU_FREQ (8000000u) /* 8 MHz */
 #define TICKER_FREQ (100u)
 
+#define TTY_BR (9600u)
+
 #endif /* CONFIG_H_ */
