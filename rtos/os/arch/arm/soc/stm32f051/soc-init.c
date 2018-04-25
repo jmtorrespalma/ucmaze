@@ -33,7 +33,7 @@
 
 /* Pins for usart1 */
 #define GPIOA_MODER ((volatile uint32_t *)0x48000000)
-#define GPIOA_AFR   ((volatile uint16_t *)0x48000020)
+#define GPIOA_AFR   ((volatile uint32_t *)0x48000020)
 #define AF_1   1
 #define TX_PIN 9
 #define RX_PIN 10
@@ -44,9 +44,9 @@ int soc_init(void)
 	*RCC_AHBENR |= (IOPCEN | IOPAEN);
 	*RCC_APBENR |= USART1EN;
 
-	/* Set pins usart 1 */
-	GPIOA_AFR[TX_PIN] |= AF_1; /* Half word writable */
-	GPIOA_AFR[RX_PIN] |= AF_1;
+	/* Set pins usart 0 */
+	GPIOA_AFR[TX_PIN >> 3] |= AF_1 << ((TX_PIN & 7) << 2);
+	GPIOA_AFR[RX_PIN >> 3] |= AF_1 << ((RX_PIN & 7) << 2);
 	*GPIOA_MODER |= (0x2 << (TX_PIN * 2));
 	*GPIOA_MODER |= (0x2 << (RX_PIN * 2));
 
