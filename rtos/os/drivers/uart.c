@@ -38,13 +38,13 @@ int uart_read_byte(struct uart_dev *d, uint8_t *b)
 
 int uart_set_config(struct uart_dev *d, struct uart_conf *c)
 {
-	c->status = d->conf.status;
-	c->baudrate = d->conf.baudrate;
-
-	return 0;
+	return _soc_uart_set_config(d, c);
 }
 
 int uart_get_config(struct uart_dev *d, struct uart_conf *c)
 {
-	return _soc_uart_set_config(d, c);
+	c->status = d->conf.status;
+	c->baudrate = d->conf.baudrate;
+
+	return 0;
 }

@@ -26,7 +26,7 @@
  * compact data, so from there we can extract information much better.
  * XXX: use bitfields.
  */
-#define UART_STATUS_EN (1 << 1)
+#define UART_STATUS_EN (1 << 0)
 
 /*
  * Used to define a set of capabilities by the OS, so we are aware of what we
