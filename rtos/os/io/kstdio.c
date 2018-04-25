@@ -32,6 +32,8 @@ char *kgets(char *str)
 		*str++ = (char)r;
 	} while (r != '\n' && !rv);
 
+	*--str = '\0';
+
 	if (rv)
 		return NULL;
 
