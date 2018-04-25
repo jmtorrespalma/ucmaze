@@ -21,12 +21,13 @@
 #include <kstdio.h>
 
 /* GPIO defines */
-#define GPIO_BASE  ((volatile uint32_t *)0x48000800)
-#define GPIO_ODR   ((volatile uint32_t *)0x48000814)
+#define GPIO_BASE        ((volatile uint32_t *)0x48000800)
+#define GPIO_ODR         ((volatile uint32_t *)0x48000814)
 #define PIN_BLUE         8
 #define DELAY_BLUE       0x080000
 #define PIN_GREEN        9
 #define DELAY_GREEN      0x040000
+#define DELAY_MAIN       0x100000
 
 unsigned int argv_green[] = {PIN_GREEN, DELAY_GREEN};
 unsigned int argv_blue[] = {PIN_BLUE, DELAY_BLUE};
@@ -49,12 +50,18 @@ int toggle_led(int argc, unsigned int *argv)
 
 int main(void)
 {
+	char msg[32];
+
 	/* Create both threads */
 	task_create(20, toggle_led, 2, argv_green);
 	task_create(20, toggle_led, 2, argv_blue);
 
 	/* Test stdout */
-	kputs("main() exiting");
+	kputs("Input message and end with LF");
+	kgets(msg);
+	kputs(msg);
+
+	while (1);
 
 	return 0;
 }
