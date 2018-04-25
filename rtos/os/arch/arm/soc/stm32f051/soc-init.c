@@ -27,21 +27,26 @@
 #define RCC_BASE   ((volatile uint32_t *)0x40021000)
 #define RCC_AHBENR ((volatile uint32_t *)0x40021014)
 #define RCC_APBENR ((volatile uint32_t *)0x40021018)
+#define IOPAEN     ((uint32_t)(1 << 17))
 #define IOPCEN     ((uint32_t)(1 << 19))
 #define USART1EN   ((uint32_t)(1 << 14))
 
 /* Pins for usart1 */
 #define GPIOA_MODER ((volatile uint32_t *)0x48000000)
+#define GPIOA_AFR   ((volatile uint16_t *)0x48000020)
+#define AF_1   1
 #define TX_PIN 9
 #define RX_PIN 10
 
 int soc_init(void)
 {
-	/* Enable clock for gpio C */
-	*RCC_AHBENR = IOPCEN;
+	/* Enable clocks */
+	*RCC_AHBENR |= (IOPCEN | IOPAEN);
+	*RCC_APBENR |= USART1EN;
 
-	/* Set pins and clock for usart 1 */
-	*RCC_APBENR = USART1EN;
+	/* Set pins usart 1 */
+	GPIOA_AFR[TX_PIN] |= AF_1; /* Half word writable */
+	GPIOA_AFR[RX_PIN] |= AF_1;
 	*GPIOA_MODER |= (0x2 << (TX_PIN * 2));
 	*GPIOA_MODER |= (0x2 << (RX_PIN * 2));
 
