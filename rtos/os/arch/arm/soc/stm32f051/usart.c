@@ -22,9 +22,9 @@
 #include "dev-def.h"
 
 #define uart2usart(_d) ((struct stm32_usart *)(_d)->id)
-#define TX_EMPTY(_u) ((_u)->isr | (1 << 7))
-#define TX_SENT(_u) ((_u)->isr | (1 << 6))
-#define RX_NEMPTY(_u) ((_u)->isr | (1 << 6))
+#define TX_EMPTY(_u) ((_u)->isr & (1 << 7))
+#define TX_SENT(_u) ((_u)->isr & (1 << 6))
+#define RX_NEMPTY(_u) ((_u)->isr & (1 << 5))
 
 void stm32_usart_enable(volatile struct stm32_usart *u)
 {
