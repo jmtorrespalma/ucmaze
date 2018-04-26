@@ -23,6 +23,8 @@
 #define EOF (-1)
 #endif
 
+int kgetchar(void);
+int kputchar(int c);
 char *kgets(char *str);
 int kputs(const char *str);
 

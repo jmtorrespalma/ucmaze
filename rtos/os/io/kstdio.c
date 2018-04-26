@@ -22,6 +22,29 @@
 
 extern struct uart_dev uart_std;
 
+int kgetchar(void)
+{
+	int rv;
+	uint8_t r;
+
+	rv = uart_read_byte(&uart_std, &r);
+	if (rv)
+		return EOF;
+
+	return (int)r;
+}
+
+int kputchar(int c)
+{
+	int rv;
+
+	rv = uart_send_byte(&uart_std, (uint8_t)c);
+	if (rv)
+		return EOF;
+
+	return 0;
+}
+
 char *kgets(char *str)
 {
 	uint8_t r;
