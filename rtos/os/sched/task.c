@@ -21,15 +21,19 @@
 #include <irq.h>
 #include <ucmaze-os.h>
 #include <util/list.h>
+#include <util/mblock.h>
 #include <errno.h>
 
 /*
  * Global array to keep kernel tasks, it provides the memory, while list
  * entries provide the logic.
  */
-extern struct task task_mem[TASK_N_MAX];
-extern struct task *task_current;
 extern struct list_head task_list; /* Sorted list */
+
+/*
+ * Memory block to allocate new tasks.
+ */
+MBLOCK_DECLARE(task_mem, struct task, TASK_N_MAX);
 
 /*
  * Handle in kernel container of tasks.
@@ -38,39 +42,15 @@ extern struct list_head task_list; /* Sorted list */
  */
 struct task *task_alloc(void)
 {
-	struct task *it, *lmt;
-
-	it = task_mem;
-	lmt = task_mem + TASK_N_MAX;
-
-	while (it != lmt) {
-		if (it->state == TASK_FINISHED)
-			return it;
-		++it;
-	}
-
-	return NULL;
+	return mblock_alloc(&task_mem);
 }
 
 /*
  * Release the memory taken by the passed task.
  */
-int task_free(uint8_t id)
+void task_free(struct task *t)
 {
-	struct task *it, *lmt;
-
-	it = task_mem;
-	lmt = task_mem + TASK_N_MAX;
-
-	while (it != lmt) {
-		if (it->id == id) {
-			it->state = TASK_FINISHED;
-			return 0;
-		}
-		++it;
-	}
-
-	return -EINVAL;
+	return mblock_free(&task_mem, t);
 }
 
 /*
@@ -87,7 +67,7 @@ uint8_t tid_generate(void)
 	next++;
 
 	/* Iterate over task_list */
-	list_for_each_entry(curr, &task_list, le) {
+	list_for_each_entry(curr, &task_list, entry) {
 		if (curr->id == next)
 			next++;
 	}
@@ -103,14 +83,56 @@ uint8_t tid_generate(void)
  * Note that this code runs in userspace! Technically should be part of a C
  * library.
  */
-void task_bootstrap(int argc, void *argv)
+void task_start(int (*code)(int, void *), int argc, void *argv)
 {
 	int rv;
 
-	rv = task_current->code(argc, argv);
+	rv = code(argc, argv);
 
 	/* Syscall to release resources */
 	task_exit(rv);
+}
+
+/*
+ * Add new task to task_list
+ */
+void task_link(struct task *t)
+{
+	list_add_tail(&t->entry, &task_list);
+}
+
+/*
+ * Obviously will crash if task is not in the list.
+ */
+void task_unlink(struct task *t)
+{
+	list_del(&t->entry);
+}
+
+/*
+ * Initialized to zero.
+ */
+uint8_t ustack_tracker[TASK_N_MAX];
+extern char _ustack_top;
+
+void ustack_assign(struct ustack *us)
+{
+	char *ustack_ptr = &_ustack_top; /* Accessing linker symbol */
+
+	for (int i = 0; i < TASK_N_MAX; ++i)
+		if (ustack_tracker[i] == 0) {
+			us->top = ustack_ptr - STACK_SZ * i;
+			ustack_tracker[i] = 1;
+			break;
+		}
+}
+
+void ustack_release(struct ustack *us)
+{
+	char *ustack_ptr = &_ustack_top;
+	int i = (int)(ustack_ptr - (char*)us->top) / STACK_SZ;
+
+	ustack_tracker[i] = 0;
 }
 
 /*
@@ -130,14 +152,22 @@ int sys_task_create(int prio, void *entry, int argc, void *argv)
 
 	id = tid_generate();
 
-	new->id = id;
-	new->state = TASK_READY;
-	new->prio = prio;
-	new->code = entry;
-	new->stack_ptr = new->stack_top; /* Set at os_boot() */
+	/*
+	 * TODO: different function.
+	 */
+	new->sched_status.prio = prio;
+	new->sched_status.prio = TASK_READY;
 
-	context_init(new, argc, argv);
-	sched_enqueue(new);
+	new->id = id;
+	new->code = entry;
+
+	/*
+	 * Stack initialization.
+	 */
+	ustack_assign(&new->stack);
+	context_init(&new->stack, argc, argv);
+
+	task_link(new); /* Adds it to task_list */
 
 	sys_irq_unlock(key);
 
@@ -146,23 +176,25 @@ int sys_task_create(int prio, void *entry, int argc, void *argv)
 
 /*
  * Removes current thread and releases resources
+ * TODO: implement correctly.
  */
 int sys_task_exit(int exit_code)
 {
-	int key;
+	//int key;
 
-	key = sys_irq_lock();
+	//key = sys_irq_lock();
 
-	sched_dequeue(task_current);
-	task_free(task_current->id);
+	//task_ulink(task_current);
+	//task_free(task_current);
+	//ustack_release(&task->);
 
-	/*
-	 * Context switch is done smoothly here
-	 */
-	task_current = sched_get_next();
-	context_fake(task_current);
+	///*
+	// * Context switch is done smoothly here
+	// */
+	//task_current = sched_get_next();
+	//context_fake(task_current);
 
-	sys_irq_unlock(key);
+	//sys_irq_unlock(key);
 
 	return exit_code;
 }

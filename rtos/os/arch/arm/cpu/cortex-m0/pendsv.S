@@ -16,6 +16,10 @@
  * along with ucmaze.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define USTACK_OFF     8
+#define CURR_OFF       0
+#define STACK_PTR_OFF  4
+
 	.syntax unified
 	.thumb
 
@@ -35,15 +39,16 @@ _context_switch:
 	mov	r7, r11
 	stmia	r0!, {r4-r7}
 
-	ldr	r0, =task_current
+	/* Update _curr_context->ptr */
+	ldr	r0, =_curr_context
 	ldr	r2, [r0]
-	str	r1, [r2, #12] /* Write t->stack_ptr */
+	str	r1, [r2, #STACK_PTR_OFF]
 
-	mov	r10, lr
-	bl	sched_get_next
-	mov	lr, r10
+	ldr	r0, =sys_rq
+	ldr	r2, [r0, #CURR_OFF]  /* Get sys_rq->curr */
+	ldr	r1, [r1, #(USTACK_OFF + STACK_PTR_OFF)]
 
-	ldr	r1, [r0, #12]
+	/* r1 contains sys_rq->curr->ustack.ptr */
 	adds	r1, r1, #16
 	ldmia	r1!, {r4-r7}
 	mov	r4, r8
@@ -55,9 +60,6 @@ _context_switch:
 	adds	r1, r1, #16
 	msr	psp, r1
 
-	/* task_current = next */
-	ldr	r1, =task_current
-	str	r0, [r1]
 	cpsie	i
 	bx	lr
 

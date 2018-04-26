@@ -21,31 +21,27 @@
 #include <sched.h>
 #include <syscall-sys.h>
 #include <util/list.h>
+#include <util/mblock.h>
 
 /*
  * Queue containing all system tasks
  */
 LIST_HEAD(task_list);
 
-extern char _ustack_top;
-
 /*
- * Current task set to run.
+ * System runqueue, contains all runnable tasks for a given scheduling cycle.
  */
-struct task *task_current;
-struct task task_mem[TASK_N_MAX];
+struct sched_rq sys_rq;
+
+extern struct mblock task_mem;
 
 /*
  * Initialize structures used by the scheduler.
  */
-void sched_mem_init(void)
+static void sched_mem_init(void)
 {
-	char *ustack_ptr = &_ustack_top; /* Accessing linker symbol */
-
-	for (int i = 0; i < TASK_N_MAX; ++i) {
-		task_mem[i].state = TASK_FINISHED;
-		task_mem[i].stack_top = ustack_ptr - STACK_SZ * i;
-	}
+	mblock_init(&task_mem);
+	INIT_LIST_HEAD(&sys_rq.rq_head);
 }
 
 /*
@@ -60,6 +56,7 @@ extern int main(void);
 int sched_init(void)
 {
 	int rv;
+	struct task *first;
 
 	sched_mem_init();
 
@@ -77,49 +74,82 @@ int sched_init(void)
 	/*
 	 * Here we pick the first task and fake it as if it was running before
 	 * so when we return to usermode, this task will start running.
+	 * TODO: check initialization here.
 	 */
-	task_current = sched_get_next();
-	context_fake(task_current);
+	sched_new_cycle(&sys_rq);
+	first = sched_get_next(&sys_rq);
+	sched_set_current(&sys_rq, first);
+	context_fake(&first->stack);
 
 	return 0;
 }
 
 /*
- * Round-robin, ignoring priority
- * Need to watchout for non-ready tasks.
  *
- * Should be called only once per tick cycle.
  */
-struct task *sched_get_next(void)
+struct task *sched_get_next(struct sched_rq *rq)
 {
-	struct task *last, *next = NULL;
+	return list_first_entry(&rq->rq_head, struct task, entry);
+}
 
-	if (!task_current)
-		next = list_first_entry(&task_list, struct task, le);
-	else {
-		last = list_last_entry(&task_list, struct task, le);
+struct task *sched_get_current(struct sched_rq *rq)
+{
+	return rq->curr;
+}
 
-		if (last != task_current)
-			next = list_next_entry(task_current, le);
-		else
-			next = list_first_entry(&task_list, struct task, le);
-	}
-
-	return next;
+void sched_set_current(struct sched_rq *rq, struct task *t)
+{
+	rq->curr = t;
 }
 
 /*
- * Add new task to execution list.
+ * Here is implemented the logic of the scheduler to decide which task is next.
+ * This function should be only called once per tick.
  */
-void sched_enqueue(struct task *t)
+void sched_update(struct sched_rq *rq)
 {
-	list_add_tail(&t->le, &task_list);
+	rq->curr->sched_status.remain_slices--;
 }
 
-/*
- * Obviously will crash if task is not in the list.
- */
+int sched_need_resched(struct sched_rq *rq)
+{
+	return (rq->curr->sched_status.remain_slices == 0);
+}
+
+void sched_enqueue(struct sched_rq *rq, struct task *t)
+{
+	list_add_tail(&rq->rq_head, &t->sched_status.entry);
+}
+
 void sched_dequeue(struct task *t)
 {
-	list_del(&t->le);
+	list_del(&t->sched_status.entry);
+}
+
+int sched_cycle_over(struct sched_rq *rq)
+{
+	return list_empty(&rq->rq_head);
+}
+
+#define prio_to_slices(_prio) (((PRIO_MIN - (_prio)) >> 4) + 1)
+
+/*
+ * Iterate over task_list, getting all tasks that are ready and set their
+ * sched_status field.
+ * Only repopulates runqueue, current needs to be set by other
+ * code.
+ */
+void sched_new_cycle(struct sched_rq *rq)
+{
+	struct task *it;
+	struct sched_info *sit;
+
+	list_for_each_entry(it, &task_list, entry) {
+		sit = &it->sched_status;
+		if (sit->state == TASK_READY) {
+			sit->alloc_slices = prio_to_slices(sit->prio);
+			sit->remain_slices = sit->alloc_slices;
+			sched_enqueue(rq, it);
+		}
+	}
 }

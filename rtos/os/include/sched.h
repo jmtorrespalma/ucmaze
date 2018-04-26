@@ -24,41 +24,79 @@
 
 enum task_state {
 	TASK_FINISHED = 0,
-	TASK_RUNNING,
 	TASK_READY,
 	TASK_BLOCKED
 };
 
+/*
+ * Information used by the scheduler.
+ */
+struct sched_info {
+	uint8_t prio;
+	uint8_t alloc_slices;
+	uint8_t remain_slices;
+	enum task_state state;
+	struct list_head entry;
+};
+
+/*
+ * Task stack userspace pointers. They are required for context switching.
+ */
+struct ustack {
+	void *top;
+	void *ptr;
+};
+
+/*
+ * Task definition.
+ */
 struct task {
 	uint8_t id;
-	enum task_state state;
-	uint8_t prio;
 	int (*code) (int, void *);
-	void *stack_top;
-	void *stack_ptr; /* Used to restore context */
-	struct list_head le;
+	struct ustack stack;
+	struct sched_info sched_status;
+	struct list_head entry; /* Used in task_list */
+};
+
+/*
+ * Runqueue, contains system tasks.
+ */
+struct sched_rq {
+	struct task *curr;
+	struct list_head rq_head;
 };
 
 /*
  * Scheduler calls.
  */
 int sched_init(void);
-void sched_enqueue(struct task *t);
+void sched_update(struct sched_rq *rq);
+void sched_enqueue(struct sched_rq *rq, struct task *t);
 void sched_dequeue(struct task *t);
-struct task *sched_get_next(void);
-void sched_need_resched(void);
+
+struct task *sched_get_next(struct sched_rq *rq);
+struct task *sched_get_current(struct sched_rq *rq);
+void sched_set_current(struct sched_rq *rq, struct task *t);
+
+/*
+ * Related to current scheduler.
+ */
+void sched_new_cycle(struct sched_rq *rq);
+int sched_cycle_over(struct sched_rq *rq);
+int sched_need_resched(struct sched_rq *rq);
 
 /*
  * Wrapper around threads main function, used to setup the environment before,
  * and the cleanup after finishing.
  */
-void task_bootstrap(int argc, void *argv);
+void task_start(int (*code)(int, void *), int argc, void *argv);
 
 /*
  * Architecture dependent functions that setup data in a format expected by the
  * cpu so it's able to load tasks or remove them.
  */
-void context_init(struct task *t, int argc, void *argv);
-void context_fake(struct task *t);
+void context_init(struct ustack *us, int argc, void *argv);
+void context_switch(struct task *new, struct task *curr);
+void context_fake(struct ustack *us);
 
 #endif /* SCHED_H_ */

@@ -1,0 +1,55 @@
+Sliced cycle based scheduler
+----------------------------
+-Scheduling cycle: span of time in which every task ready in the system has to
+ run at least for one slice.
+-Slice: minimum assignable scheduling execution time. Equal to ticker period.
+
+Algorithm
+---------
+At the start of a new scheduling cycle, the scheduler fetches all runnable
+tasks and add them to the system runqueue.
+Then the cycle duration is given by the sumation of all the priorities in the
+runqueue.
+Each task is assigned as many slices as priority level.
+Once a task has consumed its slices, is pushed out of the runqueue and the next
+task is selected.
+When the runqueue is emptied, end scheduling cycle and start a new one.
+
+
+
+Implementation
+--------------
+There are 3 basic data structures:
+- task_mem: this is nothing but storage for tasks to be allocated. Uses a
+- task_list: list containing all tasks in the system.
+- task_rq: list tracking runnable tasks, that have not consumed all its cycles
+           assigned for the current scheduling cycle.
+
+Ticker handler updates current task consumed slices and switches context if
+current task is over.
+
+Functions
+---------
+task_* functions interact with task_mem and task_list
+sched_* interact with task_rq and task_list.
+
+sys_task_create()
+	- Adds to task_mem and task_list.
+	- New task won't run until next scheduling cycle.
+
+sched_get_next()
+	- Returns first item in the runqueue.
+
+sched_enqueue()
+	- Adds task to the runqueue.
+
+sched_update_stats(rq)
+	- Update current task sched_info, reducing remaining slices.
+
+sched_need_reschedule(rq)
+	- Checks if current rq has used all slices.
+
+context_swap(t1, t2)
+	- Architecture dependent context switch. In cortex-m, mark PendSV.
+
+
