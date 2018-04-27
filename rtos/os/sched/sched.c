@@ -74,7 +74,6 @@ int sched_init(void)
 	/*
 	 * Here we pick the first task and fake it as if it was running before
 	 * so when we return to usermode, this task will start running.
-	 * TODO: check initialization here.
 	 */
 	sched_new_cycle(&sys_rq);
 	first = sched_get_next(&sys_rq);

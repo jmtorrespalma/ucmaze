@@ -51,7 +51,7 @@ static inline uint8_t _get_sc_num(void)
 }
 
 /*
- * TODO: extend more parameters
+ * TODO: Implement this handler in assembly.
  */
 int _syscall_handler(uint32_t r0, uint32_t r1, uint32_t r2, uint32_t r3)
 {
@@ -72,7 +72,7 @@ int _syscall_handler(uint32_t r0, uint32_t r1, uint32_t r2, uint32_t r3)
 		rv = sys_task_create((int)r0, (void *)r1, (int)r2, (void *)r3);
 		break;
 	case SC_TASK_EXIT:
-		rv = sys_task_exit((int)r0);
+		sys_task_exit((int)r0);
 		break;
 	}
 
@@ -84,18 +84,10 @@ int _syscall_handler(uint32_t r0, uint32_t r1, uint32_t r2, uint32_t r3)
  * switch to privileged mode using svc and initialize all kernel data
  * structures.
  */
-int os_init(void)
+void __attribute__((noreturn, naked)) os_init(void)
 {
-	int rv;
-
-	//__asm__ volatile("svc #" _strf(SC_OS_INIT) ";"
-	__asm__ volatile("svc #" _xstr(SC_OS_INIT) ";"
-		"mov %0, r0"
-		: "=r" (rv)
-		:
-		:);
-
-	return rv;
+	__asm__ volatile("svc #" _xstr(SC_OS_INIT) ";" :::);
+	__builtin_unreachable();
 }
 
 /*
@@ -119,16 +111,8 @@ int task_create(int prio, void *entry, int argc, void *argv)
 	return rv;
 }
 
-int task_exit(int exit_code)
+void __attribute__((noreturn, naked)) task_exit(int exit_code)
 {
-	int rv;
-
-	__asm__ volatile("mov r0, %1;"
-		"svc #" _xstr(SC_TASK_EXIT) ";"
-		"mov %0, r0"
-		: "=r" (rv)
-		: "r" (exit_code)
-		:);
-
-	return rv;
+	__asm__ volatile("svc #" _xstr(SC_TASK_EXIT) ";":::);
+	__builtin_unreachable();
 }

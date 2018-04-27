@@ -31,6 +31,11 @@
 extern struct list_head task_list; /* Sorted list */
 
 /*
+ * System runqueue.
+ */
+extern struct sched_rq sys_rq;
+
+/*
  * Memory block to allocate new tasks.
  */
 MBLOCK_DECLARE(task_mem, struct task, TASK_N_MAX);
@@ -175,26 +180,32 @@ int sys_task_create(int prio, void *entry, int argc, void *argv)
 }
 
 /*
- * Removes current thread and releases resources
- * TODO: implement correctly.
+ * Removes current thread and releases resources.
+ * Called from a low level handler.
  */
 int sys_task_exit(int exit_code)
 {
-	//int key;
+	int key;
+	struct task *curr, *next;
 
-	//key = sys_irq_lock();
+	key = sys_irq_lock();
 
-	//task_ulink(task_current);
-	//task_free(task_current);
-	//ustack_release(&task->);
+	/* Remove all links of the task in the kernel */
+	curr = sched_get_current(&sys_rq);
+	sched_dequeue(curr);
+	task_unlink(curr);
+	ustack_release(&curr->stack);
+	task_free(curr);
 
-	///*
-	// * Context switch is done smoothly here
-	// */
-	//task_current = sched_get_next();
-	//context_fake(task_current);
+	/* Update the runqueue */
+	if (sched_cycle_over(&sys_rq))
+		sched_new_cycle(&sys_rq);
 
-	//sys_irq_unlock(key);
+	next = sched_get_next(&sys_rq);
+	sched_set_current(&sys_rq, next);
+	context_fake(&next->stack); /* Low level magic */
+
+	sys_irq_unlock(key);
 
 	return exit_code;
 }

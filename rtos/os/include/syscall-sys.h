@@ -23,6 +23,6 @@
 
 int sys_os_init(void);
 int sys_task_create(int prio, void *entry, int argc, void *argv);
-int sys_task_exit(int exit_code);
+void sys_task_exit(int exit_code);
 
 #endif /* SYSCALL_SYS_H_ */

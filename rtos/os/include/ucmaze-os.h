@@ -23,8 +23,8 @@
  * Public API, only these functions should be exposed to the application.
  */
 
-int os_init(void);
+void os_init(void);
 int task_create(int prio, void *entry, int argc, void *argv);
-int task_exit(int exit_code);
+void task_exit(int exit_code);
 
 #endif /* UCMAZE_OS_H_ */
