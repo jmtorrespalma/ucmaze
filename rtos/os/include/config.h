@@ -17,7 +17,7 @@
 #define STACK_SZ (256u)
 
 #define CPU_FREQ (8000000u) /* 8 MHz */
-#define TICKER_FREQ (100u)
+#define TICKER_FREQ (1000u) /* 1ms */
 
 #define TTY_BR (9600u)
 

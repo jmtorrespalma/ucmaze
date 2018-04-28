@@ -36,7 +36,7 @@ struct sched_info {
 	uint8_t alloc_slices;
 	uint8_t remain_slices;
 	enum task_state state;
-	struct list_head entry;
+	struct list_head sched_entry;
 };
 
 /*
@@ -55,11 +55,13 @@ struct task {
 	int (*code) (int, void *);
 	struct ustack stack;
 	struct sched_info sched_status;
-	struct list_head entry; /* Used in task_list */
+	struct list_head task_entry; /* Used in task_list */
 };
 
 /*
  * Runqueue, contains system tasks.
+ * THe actual stored item is a sched_info, cause it isolates all of the
+ * information required for scheduling.
  */
 struct sched_rq {
 	struct task *curr;
@@ -95,7 +97,8 @@ void task_start(int (*code)(int, void *), int argc, void *argv);
  * Architecture dependent functions that setup data in a format expected by the
  * cpu so it's able to load tasks or remove them.
  */
-void context_init(struct ustack *us, int argc, void *argv);
+void context_init(struct ustack *us, int (*code)(int, void *), int argc,
+		  void *argv);
 void context_switch(struct task *new, struct task *curr);
 void context_fake(struct ustack *us);
 

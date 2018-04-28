@@ -84,11 +84,18 @@ int sched_init(void)
 }
 
 /*
- *
+ * First we withdraw the sched_info struct from the runqueue, and then we can
+ * get the proper task.
  */
 struct task *sched_get_next(struct sched_rq *rq)
 {
-	return list_first_entry(&rq->rq_head, struct task, entry);
+	struct sched_info *si;
+	struct task *first;
+
+	si = list_first_entry(&rq->rq_head, struct sched_info, sched_entry);
+	first = container_of(si, struct task, sched_status);
+
+	return first;
 }
 
 struct task *sched_get_current(struct sched_rq *rq)
@@ -117,12 +124,12 @@ int sched_need_resched(struct sched_rq *rq)
 
 void sched_enqueue(struct sched_rq *rq, struct task *t)
 {
-	list_add_tail(&rq->rq_head, &t->sched_status.entry);
+	list_add_tail(&t->sched_status.sched_entry, &rq->rq_head);
 }
 
 void sched_dequeue(struct task *t)
 {
-	list_del(&t->sched_status.entry);
+	list_del(&t->sched_status.sched_entry);
 }
 
 int sched_cycle_over(struct sched_rq *rq)
@@ -143,7 +150,7 @@ void sched_new_cycle(struct sched_rq *rq)
 	struct task *it;
 	struct sched_info *sit;
 
-	list_for_each_entry(it, &task_list, entry) {
+	list_for_each_entry(it, &task_list, task_entry) {
 		sit = &it->sched_status;
 		if (sit->state == TASK_READY) {
 			sit->alloc_slices = prio_to_slices(sit->prio);

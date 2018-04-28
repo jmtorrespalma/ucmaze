@@ -60,7 +60,8 @@ void context_fake(struct ustack *us)
  * Populates this task stack, so when the scheduler picks it, can start running
  * such as if it was resumed.
  */
-void context_init(struct ustack *us, int argc, void *argv)
+void context_init(struct ustack *us, int (*code)(int, void *), int argc,
+		  void *argv)
 {
 	uint32_t *stack_it;
 
@@ -71,9 +72,9 @@ void context_init(struct ustack *us, int argc, void *argv)
 	*stack_it-- = 0; /* LR */
 	*stack_it-- = 0; /* R12 */
 	*stack_it-- = 0; /* R3 */
-	*stack_it-- = 0; /* R2 */
-	*stack_it-- = (uint32_t)argv; /* R1 */
-	*stack_it-- = (uint32_t)argc; /* R0 */
+	*stack_it-- = (uint32_t)argv; /* R2 */
+	*stack_it-- = (uint32_t)argc; /* R1 */
+	*stack_it-- = (uint32_t)code; /* R0 */
 
 	/* Now fill with garbage the rest of registers */
 	*stack_it-- = 0; /* R11 */

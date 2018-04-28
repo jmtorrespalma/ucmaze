@@ -72,7 +72,7 @@ uint8_t tid_generate(void)
 	next++;
 
 	/* Iterate over task_list */
-	list_for_each_entry(curr, &task_list, entry) {
+	list_for_each_entry(curr, &task_list, task_entry) {
 		if (curr->id == next)
 			next++;
 	}
@@ -103,7 +103,7 @@ void task_start(int (*code)(int, void *), int argc, void *argv)
  */
 void task_link(struct task *t)
 {
-	list_add_tail(&t->entry, &task_list);
+	list_add_tail(&t->task_entry, &task_list);
 }
 
 /*
@@ -111,7 +111,7 @@ void task_link(struct task *t)
  */
 void task_unlink(struct task *t)
 {
-	list_del(&t->entry);
+	list_del(&t->task_entry);
 }
 
 /*
@@ -161,7 +161,7 @@ int sys_task_create(int prio, void *entry, int argc, void *argv)
 	 * TODO: different function.
 	 */
 	new->sched_status.prio = prio;
-	new->sched_status.prio = TASK_READY;
+	new->sched_status.state = TASK_READY;
 
 	new->id = id;
 	new->code = entry;
@@ -170,7 +170,7 @@ int sys_task_create(int prio, void *entry, int argc, void *argv)
 	 * Stack initialization.
 	 */
 	ustack_assign(&new->stack);
-	context_init(&new->stack, argc, argv);
+	context_init(&new->stack, entry, argc, argv);
 
 	task_link(new); /* Adds it to task_list */
 

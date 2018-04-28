@@ -46,7 +46,7 @@ _context_switch:
 
 	ldr	r0, =sys_rq
 	ldr	r2, [r0, #CURR_OFF]  /* Get sys_rq->curr */
-	ldr	r1, [r1, #(USTACK_OFF + STACK_PTR_OFF)]
+	ldr	r1, [r2, #(USTACK_OFF + STACK_PTR_OFF)]
 
 	/* r1 contains sys_rq->curr->ustack.ptr */
 	adds	r1, r1, #16
