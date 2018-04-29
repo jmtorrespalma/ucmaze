@@ -50,15 +50,13 @@ int toggle_led(int argc, unsigned int *argv)
 
 int main(void)
 {
-	char msg[32];
+	char msg[] = "Welcome to ucmaze-os, main() exiting";
 
 	/* Create both threads */
 	task_create(20, toggle_led, 2, argv_green);
 	task_create(20, toggle_led, 2, argv_blue);
 
 	/* Test stdout */
-	kputs("Input message and end with LF");
-	kgets(msg);
 	kputs(msg);
 
 	while (1);
