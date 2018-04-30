@@ -59,7 +59,5 @@ int main(void)
 	/* Test stdout */
 	kputs(msg);
 
-	while (1);
-
 	return 0;
 }
