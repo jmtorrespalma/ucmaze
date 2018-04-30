@@ -21,63 +21,8 @@
 #include <ucmaze-os.h>
 #include <syscall-sys.h>
 
-#define SC_OS_INIT      0
-#define SC_TASK_CREATE  1
-#define SC_TASK_EXIT    2
-#define SYSCALL_MAX     3
-
 #define _str(_a) #_a
 #define _xstr(_a) _str(_a)
-
-/*
- * The syscall ABI expects parameters in r0-r7
- * The parameter collection must be done in asm, as well as the parameter
- * setup.
- */
-
-static inline uint8_t _get_sc_num(void)
-{
-	uint8_t sc_num;
-
-	__asm__ volatile("mrs r0, psp;"
-		"ldr r1, [r0, #24];"
-		"sub r1, r1, #2;"
-		"ldrb %0, [r1]"
-		: "=r" (sc_num)
-		:
-		: "r0", "r1", "memory");
-
-	return sc_num;
-}
-
-/*
- * TODO: Implement this handler in assembly.
- */
-int _syscall_handler(uint32_t r0, uint32_t r1, uint32_t r2, uint32_t r3)
-{
-
-	uint8_t sc_num;
-	int rv = -EINVAL;
-
-	sc_num = _get_sc_num();
-
-	if (sc_num >= SYSCALL_MAX)
-		return rv;
-
-	switch (sc_num) {
-	case SC_OS_INIT:
-		sys_os_init();
-		break;
-	case SC_TASK_CREATE:
-		rv = sys_task_create((int)r0, (void *)r1, (int)r2, (void *)r3);
-		break;
-	case SC_TASK_EXIT:
-		sys_task_exit((int)r0);
-		break;
-	}
-
-	return rv;
-}
 
 /*
  * Used because on cortex-m0 we start in non-privileged mode, so we need to
