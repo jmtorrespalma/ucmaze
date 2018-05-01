@@ -36,30 +36,14 @@ unsigned int jiffies = 0;
  */
 void ticker_handler(void)
 {
-	struct task *last, *next;
 	int key;
 
 	key = sys_irq_lock();
 
 	sched_update(&sys_rq);
 
-	if (sched_need_resched(&sys_rq)) {
-		last = sched_get_current(&sys_rq);
-		sched_dequeue(last);
-
-		if (sched_cycle_over(&sys_rq)) /* Empty list */
-			sched_new_cycle(&sys_rq);
-
-		next = sched_get_next(&sys_rq);
-
-		/*
-		 * This is the architecture dependent magic
-		 */
-		if (next != last) {
-			context_switch(next, last);
-			sched_set_current(&sys_rq, next);
-		}
-	}
+	if (sched_need_resched(&sys_rq))
+		sched_schedule(&sys_rq);
 
 	++jiffies;
 	sys_irq_unlock(key);

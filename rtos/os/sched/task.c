@@ -209,3 +209,18 @@ int sys_task_exit(int exit_code)
 
 	return exit_code;
 }
+
+/*
+ * Calls the scheduler to allow another threads to run instead of the current
+ * one.
+ */
+void sys_task_yield(void)
+{
+	int key;
+
+	key = sys_irq_lock();
+
+	sched_schedule(&sys_rq);
+
+	sys_irq_unlock(key);
+}

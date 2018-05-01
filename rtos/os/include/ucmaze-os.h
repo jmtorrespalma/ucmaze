@@ -26,5 +26,6 @@
 void os_init(void);
 int task_create(int prio, void *entry, int argc, void *argv);
 void task_exit(int exit_code);
+void task_yield(void);
 
 #endif /* UCMAZE_OS_H_ */

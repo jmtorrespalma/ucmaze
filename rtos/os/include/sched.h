@@ -73,6 +73,8 @@ struct sched_rq {
  */
 int sched_init(void);
 void sched_update(struct sched_rq *rq);
+void sched_schedule(struct sched_rq *rq);
+int sched_need_resched(struct sched_rq *rq);
 void sched_enqueue(struct sched_rq *rq, struct task *t);
 void sched_dequeue(struct task *t);
 
@@ -81,11 +83,10 @@ struct task *sched_get_current(struct sched_rq *rq);
 void sched_set_current(struct sched_rq *rq, struct task *t);
 
 /*
- * Related to current scheduler.
+ * Related to sliced cycle scheduler
  */
 void sched_new_cycle(struct sched_rq *rq);
 int sched_cycle_over(struct sched_rq *rq);
-int sched_need_resched(struct sched_rq *rq);
 
 /*
  * Wrapper around threads main function, used to setup the environment before,

@@ -61,3 +61,8 @@ void __attribute__((noreturn, naked)) task_exit(int exit_code)
 	__asm__ volatile("svc #" _xstr(SC_TASK_EXIT) ";":::);
 	__builtin_unreachable();
 }
+
+void task_yield(void)
+{
+	__asm__ volatile("svc #" _xstr(SC_TASK_YIELD) ";":::);
+}

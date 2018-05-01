@@ -24,10 +24,12 @@
 #define SC_OS_INIT      0
 #define SC_TASK_CREATE  1
 #define SC_TASK_EXIT    2
-#define SYSCALL_MAX     3
+#define SC_TASK_YIELD   3
+#define SYSCALL_MAX     4
 
 int sys_os_init(void);
 int sys_task_create(int prio, void *entry, int argc, void *argv);
 void sys_task_exit(int exit_code);
+void sys_task_yield(void);
 
 #endif /* SYSCALL_SYS_H_ */

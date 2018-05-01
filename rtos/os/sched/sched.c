@@ -159,3 +159,28 @@ void sched_new_cycle(struct sched_rq *rq)
 		}
 	}
 }
+
+/*
+ * Function to be called when it's necessary to check scheduler logic, so it
+ * can decide what to do given the current runqueue and tasks status.
+ */
+void sched_schedule(struct sched_rq *rq)
+{
+	struct task *last, *next;
+
+	last = sched_get_current(rq);
+	sched_dequeue(last);
+
+	if (sched_cycle_over(rq)) /* Empty list */
+		sched_new_cycle(rq);
+
+	next = sched_get_next(rq);
+
+	/*
+	 * This is the architecture dependent magic
+	 */
+	if (next != last) {
+		context_switch(next, last);
+		sched_set_current(rq, next);
+	}
+}

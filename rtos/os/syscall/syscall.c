@@ -41,6 +41,9 @@ int syscall_handler(uint32_t sc_num, uint32_t p1, uint32_t p2,
 	case SC_TASK_EXIT:
 		sys_task_exit((int)p1);
 		break;
+	case SC_TASK_YIELD:
+		sys_task_yield();
+		break;
 	}
 
 	return rv;
