@@ -19,9 +19,9 @@
 # Define project specific variables
 CROSS_COMPILE := arm-none-eabi
 ARCH := arm
-CPU := cortex-m0
-SOC := stm32f051
-BOARD := stm32f0discovery
+CPU := arm7tdmi
+SOC := at91sam7s64
+BOARD := sam7-p64
 KERNEL := ucmaze-os
 TARGET := blinky-parallel
 VERSION := v0.1
@@ -29,7 +29,7 @@ VERSION := v0.1
 # Directories
 ROOT_DIR := .
 OS_DIR := $(ROOT_DIR)/os
-APP_DIR := $(ROOT_DIR)/app
+APP_DIR := $(ROOT_DIR)/single-task
 KSRCD := include sched init util drivers dev io syscall
 KERNEL_DIRS := $(foreach dir, $(KSRCD), $(OS_DIR)/$(dir))
 DEBUG_DIR := $(OS_DIR)/debug
@@ -41,7 +41,7 @@ A_SRC_DIRS := $(APP_DIR)
 
 # Other files
 LDSCRIPT := $(SOC_DIR)/linker.ld
-CONNECT_CFG := board/$(BOARD).cfg
+CONNECT_CFG := $(BOARD_DIR)/connect.cfg
 FLASH_CFG := $(BOARD_DIR)/flash.cfg
 DEBUG_SCRIPT := $(DEBUG_DIR)/debug.gdb
 

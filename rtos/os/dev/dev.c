@@ -28,9 +28,9 @@ extern struct uart_dev uart_std;
  */
 void dev_init(void)
 {
-	struct uart_conf std_conf = {.status = UART_STATUS_EN,
-				     .baudrate = TTY_BR};
+	//struct uart_conf std_conf = {.status = UART_STATUS_EN,
+	//			     .baudrate = TTY_BR};
 
-	uart_set_config(&uart_std, &std_conf);
+	//uart_set_config(&uart_std, &std_conf);
 	ticker_init(TICKER_FREQ);
 }

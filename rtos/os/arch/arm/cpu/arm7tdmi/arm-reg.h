@@ -16,27 +16,20 @@
  * along with ucmaze.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <irq.h>
-#include <dev.h>
-#include <ticker.h>
-#include <sched.h>
+#ifndef ARM_REG_H_
+#define ARM_REG_H_
 
 /*
- * This needs to run in privileged mode.
- * Takes care of initializating all kernel data structures.
+ * Bits in cpsr.
  */
-void sys_os_init(void)
-{
-	int key;
+#define F_BIT        (1 << 6)
+#define I_BIT        (1 << 7)
+#define USR_MASK     (0x10)
+#define FIQ_MASK     (0x11)
+#define IRQ_MASK     (0x12)
+#define SVC_MASK     (0x13)
+#define ABT_MASK     (0x17)
+#define UND_MASK     (0x1b)
+#define SYS_MASK     (0x1f)
 
-	key = sys_irq_lock();
-
-	/*
-	 * Add default tasks, select initial task and switch on the system
-	 * devices so we can start running userspace tasks.
-	 */
-	sched_init();
-	dev_init();
-
-	sys_irq_unlock(key);
-}
+#endif /* ARM_REG_H_ */

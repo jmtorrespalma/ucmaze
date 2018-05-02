@@ -16,27 +16,10 @@
  * along with ucmaze.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <irq.h>
-#include <dev.h>
-#include <ticker.h>
-#include <sched.h>
-
 /*
- * This needs to run in privileged mode.
- * Takes care of initializating all kernel data structures.
+ * OS stub necessary to turn on interrupts and another cpu dependent code.
  */
-void sys_os_init(void)
+void cpu_init(void)
 {
-	int key;
 
-	key = sys_irq_lock();
-
-	/*
-	 * Add default tasks, select initial task and switch on the system
-	 * devices so we can start running userspace tasks.
-	 */
-	sched_init();
-	dev_init();
-
-	sys_irq_unlock(key);
 }
