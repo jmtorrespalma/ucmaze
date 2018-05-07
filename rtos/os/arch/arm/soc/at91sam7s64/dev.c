@@ -17,20 +17,17 @@
  */
 
 #include <config.h>
-#include <dev.h>
 #include <uart.h>
-#include <ticker.h>
-
-extern struct uart_dev uart_std;
+#include "dev-def.h"
 
 /*
- * Initialization of default devices, uart_std and system ticker.
+ * Used for kgets() and kputs()
  */
-void dev_init(void)
-{
-	struct uart_conf std_conf = {.status = UART_STATUS_EN,
-				     .baudrate = TTY_BR};
-
-	uart_set_config(&uart_std, &std_conf);
-	ticker_init(TICKER_FREQ);
-}
+struct uart_dev uart_std = {
+	.id = (int) USART0_BASE,
+	.type = UART_TRINTS,
+	.conf = {
+		.status = 0,
+		.baudrate = 0
+	}
+};

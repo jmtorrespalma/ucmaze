@@ -59,7 +59,7 @@ int main(void)
 	//task_create(20, toggle_led, 2, argv_blue);
 
 	/* Test stdout */
-	//kputs(msg);
+	kputs(msg);
 
 	toggle_led(2, argv_green);
 

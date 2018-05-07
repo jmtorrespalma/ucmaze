@@ -103,4 +103,28 @@ struct sam7_aic {
 
 #define AIC_BASE   ((volatile struct sam7_aic *)0xfffff000)
 
+/*
+ * Serial communication
+ */
+struct sam7_usart {
+	uint32_t cr;      /* Control register */
+	uint32_t mr;      /* Mode register */
+	uint32_t ier;     /* Interrupt enable */
+	uint32_t idr;     /* Interrupt disable */
+	uint32_t imr;     /* Interrupt mask */
+	uint32_t csr;     /* Channel status register */
+	uint32_t rhr;     /* Receiver holding */
+	uint32_t thr;     /* Transmitter holding */
+	uint32_t brgr;    /* Baudrate generator */
+	uint32_t rtor;    /* Receiver timeout */
+	uint32_t ttgr;    /* Transmitter timerguard */
+	uint32_t rsv0[5];
+	uint32_t fidi;    /* FIDI ratio */
+	uint32_t ner;     /* Number of errors */
+	uint32_t rsv1;
+	uint32_t irda;    /* Irda filter */
+};
+
+#define USART0_BASE  ((volatile struct sam7_usart *)0xfffc0000)
+
 #endif /* DEV_DEF_H_ */

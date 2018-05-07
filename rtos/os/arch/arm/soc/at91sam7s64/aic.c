@@ -86,6 +86,7 @@ void _sysc_handler(void)
 
 	ticker_handler();
 	unused = PIT_BASE->pivr; /* Clear the interrupt */
+	(void)unused;
 }
 
 /*
