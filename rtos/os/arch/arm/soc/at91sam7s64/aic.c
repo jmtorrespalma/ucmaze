@@ -24,9 +24,6 @@
  * This is the driver for the advanced interrupt controller.
  */
 
-#define FIQ_PID  0
-#define SYSC_PID 1
-
 extern void ticker_handler(void);
 
 /*

@@ -61,8 +61,6 @@ struct sam7_pmc {
 	uint32_t rsv6[4];
 };
 
-#define PMC_BASE   ((volatile struct sam7_pmc *)0xfffffc00)
-
 /*
  * Periodic interval timer, used as system ticker.
  */
@@ -72,8 +70,6 @@ struct sam7_pit {
 	uint32_t pivr;
 	uint32_t piir;
 };
-
-#define PIT_BASE   ((volatile struct sam7_pit *)0xfffffd30)
 
 /*
  * Interrupt controller.
@@ -101,8 +97,6 @@ struct sam7_aic {
 	uint32_t ffsr;
 };
 
-#define AIC_BASE   ((volatile struct sam7_aic *)0xfffff000)
-
 /*
  * Serial communication
  */
@@ -125,6 +119,76 @@ struct sam7_usart {
 	uint32_t irda;    /* Irda filter */
 };
 
+/*
+ * GPIO controller.
+ */
+struct sam7_pio {
+	uint32_t per;   /* Enable */
+	uint32_t pdr;   /* Disable */
+	uint32_t psr;   /* Status */
+	uint32_t rsv0;
+
+	uint32_t oer;   /* Output enable */
+	uint32_t odr;   /* Output disable */
+	uint32_t osr;   /* Output status */
+	uint32_t rsv1;
+
+	uint32_t ifer;  /* Glitch filter enable */
+	uint32_t ifdr;  /* Glitch filter disable */
+	uint32_t ifsr;  /* Glitch filter status */
+	uint32_t rsv2;
+
+	uint32_t sodr;  /* Set output data */
+	uint32_t codr;  /* Clear output data */
+	uint32_t odsr;  /* Output data status */
+	uint32_t pdsr;  /* Pin data status */
+
+	uint32_t ier;   /* Interrupt enable */
+	uint32_t idr;   /* Interrupt disable */
+	uint32_t imr;   /* Interrupt mask */
+	uint32_t isr;   /* Interrupt status */
+
+	uint32_t mder;  /* Multi-driver enable */
+	uint32_t mddr;  /* Multi-driver disable */
+	uint32_t mdsr;  /* Multi-driver status */
+	uint32_t rsv3;
+
+	uint32_t pudr;  /* Pull-up disable */
+	uint32_t puer;  /* Pull-up enable */
+	uint32_t pusr;  /* Pull-up status */
+	uint32_t rsv4;
+
+	uint32_t asr;   /* Peripheral A select */
+	uint32_t bsr;   /* Peripheral B select */
+	uint32_t absr;  /* AB status */
+	uint32_t rsv5[9];
+
+	uint32_t ower;  /* Output write enable */
+	uint32_t owdr;  /* Output write disable */
+	uint32_t owsr;  /* Output write status */
+	uint32_t rsv6;
+};
+
+/*
+ * Peripheral base addresses
+ */
+#define PMC_BASE     ((volatile struct sam7_pmc *)0xfffffc00)
+#define AIC_BASE     ((volatile struct sam7_aic *)0xfffff000)
+#define PIOA_BASE    ((volatile struct sam7_pio *)0xfffff400)
 #define USART0_BASE  ((volatile struct sam7_usart *)0xfffc0000)
+#define PIT_BASE     ((volatile struct sam7_pit *)0xfffffd30)
+
+/*
+ * Peripheral identifiers
+ */
+#define FIQ_PID     (0u)
+#define SYSC_PID    (1u)
+#define USART0_PID  (6u)
+
+/*
+ * Pinout, only default, that is values after reset.
+ */
+#define USART0_TX (6u)
+#define USART0_RX (5u)
 
 #endif /* DEV_DEF_H_ */

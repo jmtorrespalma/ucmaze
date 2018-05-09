@@ -77,10 +77,22 @@ void ticker_init(uint32_t period)
 	PIT_BASE->mr = ((3 << 24) | val);  /* Enable and set value */
 }
 
+/*
+ * Set pins for usart0 so we can connect to it and clock the device.
+ */
+static inline void uart_std_preinit(void)
+{
+	PIOA_BASE->pdr |= (USART0_TX | USART0_RX);
+	PIOA_BASE->asr = (USART0_TX | USART0_RX);
+
+	PMC_BASE->pcer |= USART0_PID;
+}
+
 int soc_init(void)
 {
 	clock_init();
 	ints_init();
+	uart_std_preinit();
 
 	return 0;
 }
