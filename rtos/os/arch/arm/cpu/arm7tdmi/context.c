@@ -38,6 +38,8 @@ void context_init(struct ustack *us, int (*code)(int, void *), int argc,
 	/*
 	 * Fill callee saved registers with garbage.
 	 */
+	*stack_it-- = 0; /* LR */
+	*stack_it-- = 0; /* R12 */
 	*stack_it-- = 0; /* R11 */
 	*stack_it-- = 0; /* R10 */
 	*stack_it-- = 0; /* R9 */
@@ -45,17 +47,14 @@ void context_init(struct ustack *us, int (*code)(int, void *), int argc,
 	*stack_it-- = 0; /* R7 */
 	*stack_it-- = 0; /* R6 */
 	*stack_it-- = 0; /* R5 */
-	*stack_it = 0; /* R4 */
-
+	*stack_it-- = 0; /* R4 */
 	*stack_it-- = 0; /* R3 */
 	*stack_it-- = (uint32_t)argv; /* R2 */
 	*stack_it-- = (uint32_t)argc; /* R1 */
 	*stack_it-- = (uint32_t)code; /* R0 */
 
-	*stack_it-- = 0; /* R12 */
-	*stack_it-- = 0; /* LR */
 	*stack_it-- = (uint32_t)task_start; /* PC */
-	*stack_it-- = CPSR_INIT;
+	*stack_it = CPSR_INIT;
 
 	us->ptr = stack_it;
 }
