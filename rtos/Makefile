@@ -16,20 +16,25 @@
 
 # Makefile template for embedded builds
 
-# Define project specific variables
-CROSS_COMPILE := arm-none-eabi
-ARCH := arm
-CPU := arm7tdmi
-SOC := at91sam7s64
+ifndef BOARD
 BOARD := sam7-p64
+endif
+
+ifndef APP
+APP := single-task
+endif
+
+include os/conf/$(BOARD).mk
+
+# Define project specific variables
 KERNEL := ucmaze-os
-TARGET := blinky-parallel
+TARGET := $(APP)
 VERSION := v0.1
 
 # Directories
 ROOT_DIR := .
 OS_DIR := $(ROOT_DIR)/os
-APP_DIR := $(ROOT_DIR)/single-task
+APP_DIR := $(ROOT_DIR)/$(APP)
 KSRCD := include sched init util drivers dev io syscall
 KERNEL_DIRS := $(foreach dir, $(KSRCD), $(OS_DIR)/$(dir))
 DEBUG_DIR := $(OS_DIR)/debug
@@ -40,10 +45,10 @@ K_SRC_DIRS := $(KERNEL_DIRS) $(BOARD_DIR) $(CPU_DIR) $(SOC_DIR)
 A_SRC_DIRS := $(APP_DIR)
 
 # Other files
-LDSCRIPT := $(SOC_DIR)/linker.ld
-CONNECT_CFG := $(BOARD_DIR)/connect.cfg
-FLASH_CFG := $(BOARD_DIR)/flash.cfg
-DEBUG_SCRIPT := $(DEBUG_DIR)/debug.gdb
+LDSCRIPT ?= $(SOC_DIR)/linker.ld
+CONNECT_CFG ?= $(BOARD_DIR)/connect.cfg
+FLASH_CFG ?= $(BOARD_DIR)/flash.cfg
+DEBUG_SCRIPT ?= $(DEBUG_DIR)/debug.gdb
 
 # Set all the flags
 CFLAGS = -mcpu=$(CPU)
