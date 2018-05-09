@@ -43,36 +43,28 @@ _irq_handler:
 	 * context_switch() call, so we need to save the whole context.
 	 * happened.
 	 */
-	push	{r0-r3}
-	sub	r2, lr, #4 /* Adjust interrupted pc */
-	mrs	r1, spsr
-
-	/* Case if coming from userspace */
+	sub	lr, lr, #4 /* Adjust interrupted pc */
 	msr	cpsr_c, #(SYS_MASK | F_BIT | I_BIT)
-	mov	r3, lr /* Userspace lr */
+	push	{r0-r10,fp,ip,lr} /* Save r0-r12, lr */
 	mov	r0, sp
-	sub	sp, sp, #64
+	sub	sp, sp, #8
 	msr	cpsr_c, #(IRQ_MASK | F_BIT | I_BIT)
-	stmdb	r0!, {r4-r11}
-	pop	{r4-r7}
-	stmdb	r0!, {r4-r7} /* Actually r0-r3 */
-	stmdb	r0!, {r1-r3, r12} /* cspr, pc, lr, r12 */
+	mrs	r1, spsr
+	stmdb	r0!, {r1, lr} /* Save thread status and pc */
 
 	/* Call soc handler */
 	bl	_soc_irq_handler
 
 	/* Restore context */
 	msr	cpsr_c, #(SYS_MASK | F_BIT | I_BIT)
+	ldr	lr, [sp, #60] /* Loads usermode lr */
 	mov	r0, sp
 	add	sp, sp, #64
 	msr	cpsr_c, #(IRQ_MASK | F_BIT | I_BIT)
-	ldmia	r0!, {r1-r3, r12}
-	msr	spsr, r1
-	mov	lr, r2
-	msr	cpsr_c, #(SYS_MASK | F_BIT | I_BIT)
-	mov	lr, r3
-	msr	cpsr_c, #(IRQ_MASK | F_BIT | I_BIT)
-	ldmia	r0, {r0-r11}
+	ldr	lr, [r0], #4
+	msr	spsr, lr
+	ldr	lr, [r0], #4 /* Return address */
+	ldmia	r0, {r0-r10,fp,ip}
 
 	/*
 	 * Return to userspace.

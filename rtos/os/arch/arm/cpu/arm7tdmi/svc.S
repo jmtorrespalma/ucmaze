@@ -37,27 +37,22 @@ _svc_handler:
 	/*
 	 * Save context in user stack.
 	 */
-	msr	cpsr_c, #(SVC_MASK | F_BIT | I_BIT) /* Lock interrupts */
-	push	{r0-r3}
-
 	msr	cpsr_c, #(SYS_MASK | F_BIT | I_BIT)
-	mov	r3, lr /* Userspace lr */
-	mov	r0, sp
-	sub	sp, sp, #64
+	push	{r0-r10,fp,ip,lr} /* Save r0-r12, lr */
+	mov	r4, sp
+	sub	sp, sp, #8
 	msr	cpsr_c, #(SVC_MASK | F_BIT | I_BIT)
-	stmdb	r0!, {r4-r11}
-	pop	{r4-r7}
-	stmdb	r0!, {r4-r7} /* Original r0-r3 */
-	stmdb	r0!, {r1-r3, r12} /* cspr, pc, lr, r12 */
+	mrs	r5, spsr
+	stmdb	r4!, {r5, lr} /* Save thread status and pc */
 
 	/*
 	 * Pass parameters.
 	 */
-	push	{r7, lr} /* To keep 8 bit aligned */
+	push	{r3, lr} /* To keep 8 bit aligned */
+	mov	r3, r2
+	mov	r2, r1
+	mov	r1, r0
 	ldrb	r0, [lr, #-4] /* lr does not need adjustment */
-	mov	r1, r4
-	mov	r2, r5
-	mov	r3, r6
 
 	/* Call kernel generic syscall */
 	bl	syscall_handler
@@ -65,16 +60,14 @@ _svc_handler:
 
 	/* Restore context */
 	msr	cpsr_c, #(SYS_MASK | F_BIT | I_BIT)
+	ldr	lr, [sp, #60] /* Loads usermode lr */
 	mov	r0, sp
 	add	sp, sp, #64
 	msr	cpsr_c, #(IRQ_MASK | F_BIT | I_BIT)
-	ldmia	r0!, {r1-r3, r12}
-	msr	spsr, r1
-	mov	lr, r2
-	msr	cpsr_c, #(SYS_MASK | F_BIT | I_BIT)
-	mov	lr, r3
-	msr	cpsr_c, #(IRQ_MASK | F_BIT | I_BIT)
-	ldmia	r0, {r0-r11}
+	ldr	lr, [r0], #4
+	msr	spsr, lr
+	ldr	lr, [r0], #4 /* Return address */
+	ldmia	r0, {r0-r10,fp,ip}
 
 	/*
 	 * Return to userspace.
