@@ -57,5 +57,10 @@ int _soc_uart_read_byte(struct uart_dev *d, uint8_t *b)
  */
 int _soc_uart_set_config(struct uart_dev *d, struct uart_conf *c)
 {
+	struct icp_uart *iu = uart2icp_uart(d);
+
+	d->conf.status = c->status;
+	d->conf.baudrate = c->baudrate;
+
 	return 0;
 }

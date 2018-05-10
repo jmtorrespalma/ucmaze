@@ -53,13 +53,15 @@ context_switch:
  *
  * Need to change to system mode and write the user stack to continue running
  * another task after the kernel returns.
+ *
+ * Passed parameter is a pointer to ustack
  */
 	.global context_fake
 	.func   context_fake
 context_fake:
 	mrs	r3, cpsr
 	msr	cpsr_c, #(SYS_MASK | F_BIT | I_BIT)
-	ldr	sp, [r0, #(USTACK_OFF + STACK_PTR_OFF)]
+	ldr	sp, [r0, #(STACK_PTR_OFF)]
 	msr	cpsr_c, r3
 	bx	lr
 

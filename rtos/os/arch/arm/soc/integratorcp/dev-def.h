@@ -58,7 +58,7 @@ struct icp_uart {
 /*
  * Peripheral base addresses
  */
-#define UART0_BASE  ((volatile void *)0x16000000)
-#define UART1_BASE  ((volatile void *)0x17000000)
+#define UART0_BASE  ((volatile struct icp_uart *)0x16000000)
+#define UART1_BASE  ((volatile struct icp_uart *)0x17000000)
 
 #endif /* DEV_DEF_H_ */
