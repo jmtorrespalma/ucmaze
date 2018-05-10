@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with ucmaze.  If not, see <http://www.gnu.org/licenses/>.
 
+DEBUG_SCRIPT ?= $(DEBUG_DIR)/debug.gdb
 QEMU := qemu-system-arm
 
 flash: $(TARGET).bin
@@ -21,6 +22,6 @@ flash: $(TARGET).bin
 	$(QEMU) -M $(BOARD) -m 128M -nographic -kernel $^
 
 debug: $(TARGET).bin $(TARGET).elf
-	$(QEMU) -M $(BOARD) -m 128M -nographic -s -S -kernel $< &
+	$(QEMU) -M $(BOARD) -m 128M -nographic -gdb tcp::3333 -S -kernel $< &
 	$(GDB) -x $(DEBUG_SCRIPT) $(TARGET).elf
 	$(KILL) $(QEMU)

@@ -19,17 +19,31 @@
 #include <config.h>
 #include "dev-def.h"
 
+extern char isr_vect;
+
 /*
- * Periodic interval timer receives MCLK/16
- * This enables the peripheral, including interrupts.
  */
 void ticker_init(uint32_t period)
 {
 	/* TODO: fill this function */
 }
 
+/*
+ * The qemu simulator requires the vector table to be copied to the beginning
+ * of RAM, otherwise can't respond to exceptions.
+ */
+void copy_handlers(void)
+{
+	uint32_t *it = 0x0, *src = (void *)0x10000;
+
+	for (int i = 0; i < 16; ++i)
+		it[i] = src[i];
+
+}
+
 int soc_init(void)
 {
+	copy_handlers();
 
 	return 0;
 }
