@@ -14,7 +14,16 @@
 # You should have received a copy of the GNU General Public License
 # along with ucmaze.  If not, see <http://www.gnu.org/licenses/>.
 
-# Makefile template for embedded builds
+# The whole buildsystem is simply based in make since it's very fast, almost
+# standard and easy to use.
+#
+# This Makefile is expecting for variables APP and BOARD to be set in the
+# environment and takes care of building the appropriate source files.
+#
+# For a given board, there must be a BOARD.mk file that defines variables such
+# as CPU, ARCH, etc. In some special cases, some extra BOARD-rules.mk is
+# required if that target has any special rule that is not covered by all the
+# common standard rules defined here.
 
 ifndef BOARD
 BOARD := sam7-p64
@@ -24,7 +33,15 @@ ifndef APP
 APP := single-task
 endif
 
-include os/conf/$(BOARD).mk
+ifndef TOOLCHAIN
+TOOLCHAIN := gnu
+endif
+
+ifndef FLASH_TOOL
+FLASH_TOOL := openocd
+endif
+
+include os/conf/board/$(BOARD).mk
 
 # Define project specific variables
 KERNEL := ucmaze-os
@@ -44,46 +61,6 @@ SOC_DIR := $(OS_DIR)/arch/$(ARCH)/soc/$(SOC)
 K_SRC_DIRS := $(KERNEL_DIRS) $(BOARD_DIR) $(CPU_DIR) $(SOC_DIR)
 A_SRC_DIRS := $(APP_DIR)
 
-# Other files
-LDSCRIPT ?= $(SOC_DIR)/linker.ld
-CONNECT_CFG ?= $(BOARD_DIR)/connect.cfg
-FLASH_CFG ?= $(BOARD_DIR)/flash.cfg
-DEBUG_SCRIPT ?= $(DEBUG_DIR)/debug.gdb
-
-# Set all the flags
-CFLAGS = -mcpu=$(CPU)
-CFLAGS += -Wall -Wimplicit
-CFLAGS += -Wpointer-arith -Wswitch
-CFLAGS += -Wredundant-decls -Wreturn-type -Wshadow -Wunused
-CFLAGS += -g -Og
-CFLAGS += -ffunction-sections -fdata-sections -ffreestanding
-CFLAGS += -I$(OS_DIR) -I$(OS_DIR)/include
-
-ASFLAGS = -mcpu=$(CPU)
-ASFLAGS += -g
-ASFLAGS += -x assembler-with-cpp
-
-LDFLAGS = -mcpu=$(CPU)
-LDFLAGS += -nostartfiles -nostdlib
-LDFLAGS += -Wl,-Map=$(TARGET).map,--cref,--gc-sections
-LDFLAGS += -lgcc
-LDFLAGS += -T$(LDSCRIPT)
-
-# Define programs and commands.
-CC := $(CROSS_COMPILE)-gcc
-CPP := $(CROSS_COMPILE)-g++
-AR := $(CROSS_COMPILE)-ar
-OBJCOPY := $(CROSS_COMPILE)-objcopy
-OBJDUMP := $(CROSS_COMPILE)-objdump
-SIZE := $(CROSS_COMPILE)-size
-NM := $(CROSS_COMPILE)-nm
-GDB := $(CROSS_COMPILE)-gdb
-OPENOCD := openocd
-RM := rm -f
-KILL := pkill
-TAR := tar
-INDENT := indent
-
 # Kernel files
 K_SRC := $(shell find $(K_SRC_DIRS) -name "*.c")
 K_INC := $(shell find $(K_SRC_DIRS) -name "*.h")
@@ -96,6 +73,9 @@ A_SRC := $(shell find $(A_SRC_DIRS) -name "*.c")
 A_INC := $(shell find $(A_SRC_DIRS) -name "*.h")
 A_ASRC := $(shell find $(A_SRC_DIRS) -name "*.S")
 A_OBJ := $(A_SRC:.c=.o) $(A_ASRC:.S=.o)
+
+# Include toolchain definitions
+include os/conf/toolchain/$(TOOLCHAIN).mk
 
 # Implicit rules
 %.o: %.c
@@ -123,16 +103,10 @@ all: $(TARGET).bin
 $(KLIB): $(K_OBJ)
 	$(AR) rcs $@ $^
 
-# Flash with openocd
-flash: $(TARGET).bin
-	$(OPENOCD) -c "set PROGRAM \"$(TARGET).bin\"" -f $(CONNECT_CFG) \
-		-f $(FLASH_CFG)
-
-# Start debugging session
-debug: $(TARGET).elf
-	$(OPENOCD) -f $(CONNECT_CFG) -c "init" -c "halt" &
-	$(GDB) -x $(DEBUG_SCRIPT) $<
-	$(KILL) $(OPENOCD)
+# Flash and debugging is tool dependent, should define the rules:
+# - flash: to burn the compiled app into the board.
+# - debug: to connect and debug the application.
+include os/conf/flash/$(FLASH_TOOL).mk
 
 # Show executable size
 size: $(TARGET).elf
