@@ -25,6 +25,32 @@
  * Peripheral map definition.
  */
 
+struct icp_timer {
+	uint32_t lv;       /* Load value */
+	uint32_t cv;       /* Current value */
+	uint32_t ctl;      /* Control */
+	uint32_t iclr;     /* Interrupt clear */
+	uint32_t ris;      /* Raw interrupt status */
+	uint32_t mis;      /* Masked interrupt status */
+	uint32_t bgl;      /* Background load value */
+};
+
+/*
+ * Primary interrupt controller
+ */
+struct icp_pic {
+	uint32_t irqs;    /* IRQ status */
+	uint32_t irqrs;   /* IRQ raw status */
+	uint32_t irqes;   /* IRQ enable set */
+	uint32_t irqec;   /* IRQ enable clear */
+	uint32_t softs;   /* Software interrupt set */
+	uint32_t softc;   /* Software interrupt clear */
+	uint32_t fiqs;    /* FIQ status */
+	uint32_t fiqrs;   /* FIQ raw status */
+	uint32_t fiqes;   /* FIQ enable set */
+	uint32_t fiqec;   /* FIQ enable clear */
+};
+
 struct icp_uart {
 	uint32_t dr;       /* Data read or written */
 	uint32_t rsr_ecr;  /* Receive status or write error */
@@ -58,7 +84,20 @@ struct icp_uart {
 /*
  * Peripheral base addresses
  */
-#define UART0_BASE  ((volatile struct icp_uart *)0x16000000)
-#define UART1_BASE  ((volatile struct icp_uart *)0x17000000)
+#define TIMER0_BASE  ((volatile struct icp_timer *)0x13000000)
+#define TIMER1_BASE  ((volatile struct icp_timer *)0x13000100)
+#define TIMER2_BASE  ((volatile struct icp_timer *)0x13000200)
+#define PIC_BASE     ((volatile struct icp_pic *)0x14000000)
+#define UART0_BASE   ((volatile struct icp_uart *)0x16000000)
+#define UART1_BASE   ((volatile struct icp_uart *)0x17000000)
+
+/*
+ * Peripheral ids, required for interrupt identification.
+ */
+#define UART0_PID   (1)
+#define UART1_PID   (2)
+#define TIMER0_PID  (5)
+#define TIMER1_PID  (6)
+#define TIMER2_PID  (7)
 
 #endif /* DEV_DEF_H_ */

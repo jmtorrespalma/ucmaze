@@ -26,11 +26,25 @@
 
 extern void ticker_handler(void);
 
+void ints_init(void)
+{
+	PIC_BASE->irqes |= (1 << TIMER1_PID);
+}
+
 /*
  * Called from the low level interrupt handler, here we determine the source
  * and call the assignated isr for that interrupt type.
+ *
+ * Peripherals should internally clear their own interrupt in the peripheral
+ * driver interrupt handler.
  */
 void _soc_irq_handler(void)
 {
-	/* TODO: fill this function */
+	/* FIXME: Only timer interrupt implemented */
+	if (PIC_BASE->irqs & (1 << TIMER1_PID)) {
+		PIC_BASE->irqec = (1 << TIMER1_PID);
+		ticker_handler();
+		TIMER1_BASE->iclr = 1;
+		PIC_BASE->irqes |= (1 << TIMER1_PID);
+	}
 }

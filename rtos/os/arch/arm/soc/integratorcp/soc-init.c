@@ -19,15 +19,6 @@
 #include <config.h>
 #include "dev-def.h"
 
-extern char isr_vect;
-
-/*
- */
-void ticker_init(uint32_t period)
-{
-	/* TODO: fill this function */
-}
-
 /*
  * The qemu simulator requires the vector table to be copied to the beginning
  * of RAM, otherwise can't respond to exceptions.
@@ -41,9 +32,33 @@ void copy_handlers(void)
 
 }
 
+/*
+ * Only ticker interrupt is enabled.
+ */
+extern void ints_init(void);
+
+/*
+ * Ticker is implemented using timer 1, whose input clock is 1 MHz.
+ * We use it in periodic mode.
+ */
+#define TICKER_CLOCK (1000000u)
+void ticker_init(uint32_t period)
+{
+	TIMER1_BASE->ctl |= (1 << 1); /* 32 bits timer size */
+	TIMER1_BASE->ctl |= (1 << 5); /* Interrupt enable */
+	TIMER1_BASE->ctl |= (1 << 6); /* Periodic mode */
+
+	/* Reload value */
+	TIMER1_BASE->lv = TICKER_CLOCK / period;
+
+	TIMER1_BASE->ctl |= (1 << 7); /* Enable bit */
+}
+
+
 int soc_init(void)
 {
 	copy_handlers();
+	ints_init();
 
 	return 0;
 }
