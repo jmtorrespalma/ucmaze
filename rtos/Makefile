@@ -51,7 +51,7 @@ VERSION := v0.1
 # Directories
 ROOT_DIR := .
 OS_DIR := $(ROOT_DIR)/os
-APP_DIR := $(ROOT_DIR)/$(APP)
+APP_DIR := $(ROOT_DIR)/app/$(APP)
 KSRCD := include sched init util drivers dev io syscall
 KERNEL_DIRS := $(foreach dir, $(KSRCD), $(OS_DIR)/$(dir))
 DEBUG_DIR := $(OS_DIR)/debug
