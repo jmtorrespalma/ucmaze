@@ -75,7 +75,7 @@ A_ASRC := $(shell find $(A_SRC_DIRS) -name "*.S")
 A_OBJ := $(A_SRC:.c=.o) $(A_ASRC:.S=.o)
 
 # Include toolchain definitions
-include os/conf/toolchain/$(TOOLCHAIN).mk
+include os/conf/toolchain/$(TOOLCHAIN)/common.mk
 
 # Implicit rules
 %.o: %.c
