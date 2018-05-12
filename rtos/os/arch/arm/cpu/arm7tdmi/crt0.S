@@ -33,8 +33,8 @@
 	.word _start
 	.word _startup_handler
 	.word _svc_handler
-	.word _startup_handler
-	.word _startup_handler
+	.word _prefetch_abort
+	.word _data_abort
 	.word _startup_handler
 	.word _irq_handler
 	.word _startup_handler
@@ -108,3 +108,11 @@ _start:
 _startup_handler:
 	b	_startup_handler
         .endfunc
+
+/*
+ * These two are used for debugging
+ */
+_data_abort:
+	b	.
+_prefetch_abort:
+	b	.
