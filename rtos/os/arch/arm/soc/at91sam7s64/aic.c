@@ -32,7 +32,7 @@ extern void ticker_handler(void);
  */
 void sam7_aic_set_handler(int n, void(*handler)(void))
 {
-	AIC_BASE->smr[n] = (uint32_t)handler;
+	AIC_BASE->svr[n] = (uint32_t)handler;
 }
 
 void sam7_aic_enable(int n)

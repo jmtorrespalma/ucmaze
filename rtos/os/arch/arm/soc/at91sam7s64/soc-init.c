@@ -88,9 +88,20 @@ static inline void uart_std_preinit(void)
 	PMC_BASE->pcer |= USART0_PID;
 }
 
+/*
+ * The soc by default starts with the watchdog enabled so we can run only up to
+ * 16 seconds.
+ */
+#define WDT_MR  ((volatile uint32_t *)0xfffffd44)
+void watchdog_disable(void)
+{
+	*WDT_MR = (1 << 15);
+}
+
 int soc_init(void)
 {
 	clock_init();
+	watchdog_disable();
 	ints_init();
 	uart_std_preinit();
 
