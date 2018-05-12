@@ -82,10 +82,10 @@ void ticker_init(uint32_t period)
  */
 static inline void uart_std_preinit(void)
 {
-	PIOA_BASE->pdr |= (USART0_TX | USART0_RX);
-	PIOA_BASE->asr = (USART0_TX | USART0_RX);
+	PIOA_BASE->pdr = (1 << USART0_TX) | (1 << USART0_RX);
+	PIOA_BASE->asr = (1 << USART0_TX) | (1 << USART0_RX);
 
-	PMC_BASE->pcer |= USART0_PID;
+	PMC_BASE->pcer = (1 << USART0_PID);
 }
 
 /*
