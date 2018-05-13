@@ -55,13 +55,14 @@ void clock_init(void)
 	 * Enable PLL.
 	 * PLLCOUNT is the worst case again.
 	 */
-	PMC_BASE->pllr = ((PLL_MUL << 16) | (16 << 8) | PLL_DIV);
-	while (!(PMC_BASE->sr & LOCK));
+	//PMC_BASE->pllr = ((PLL_MUL << 16) | (16 << 8) | PLL_DIV);
+	//while (!(PMC_BASE->sr & LOCK));
 
 	/*
 	 * Select PLL as master clock.
 	 */
-	PMC_BASE->mckr |= (0x3);
+	//PMC_BASE->mckr |= (0x3);
+	PMC_BASE->mckr |= (0x1);
 	while (!(PMC_BASE->sr & MCKRDY));
 }
 

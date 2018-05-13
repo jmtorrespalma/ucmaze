@@ -55,7 +55,7 @@ uint8_t sam7_usart_read_byte(volatile struct sam7_usart *u)
 void sam7_usart_set_baudrate(volatile struct sam7_usart *u,
 			     unsigned int baudrate)
 {
-	u->brgr = CPU_FREQ / (baudrate * 16);
+	u->brgr = CPU_FREQ / (baudrate);
 }
 
 /*
@@ -92,12 +92,14 @@ int _soc_uart_set_config(struct uart_dev *d, struct uart_conf *c)
 	volatile struct sam7_usart *lld = uart2usart(d);
 
 	sam7_usart_disable(lld);
-	sam7_usart_set_baudrate(lld, c->baudrate);
 
 	/*
 	 * TODO: read data size and stop bits from config.
+	 * Set SYNC register too.
 	 */
-	lld->mr |= ((3 << 6) | (4 << 9));
+	lld->mr = ((3 << 6) | (4 << 9) | (1 << 8));
+	sam7_usart_set_baudrate(lld, c->baudrate);
+
 
 	d->conf.status = c->status;
 	d->conf.baudrate = c->baudrate;
