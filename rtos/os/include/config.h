@@ -1,6 +1,5 @@
 /*
- * This file should be generated during build time, but so far we just stick to
- * writing it manually.
+ * System configurable parameters.
  */
 
 #ifndef CONFIG_H_
@@ -16,8 +15,7 @@
 
 #define STACK_SZ (256u)
 
-#define CPU_FREQ (8000000u) /* 8 MHz */
-#define TICKER_FREQ (1000u) /* 1ms */
+#define TICKER_FREQ (500u) /* 2ms */
 
 #define TTY_BR (9600u)
 

@@ -16,7 +16,7 @@
  * along with ucmaze.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <config.h>
+#include <board.h>
 #include "dev-def.h"
 
 /*

@@ -29,6 +29,8 @@ CFLAGS += -Wredundant-decls -Wreturn-type -Wshadow -Wunused
 CFLAGS += -g -Og
 CFLAGS += -ffunction-sections -fdata-sections -ffreestanding
 CFLAGS += -I$(OS_DIR) -I$(OS_DIR)/include
+CFLAGS += -I$(OS_DIR)/arch/$(ARCH)/board/$(BOARD)
+CFLAGS += -I$(OS_DIR)/arch/$(ARCH)/board/$(SOC)
 
 ASFLAGS += -g
 ASFLAGS += -x assembler-with-cpp

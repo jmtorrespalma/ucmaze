@@ -17,7 +17,7 @@
  */
 
 #include <stdint.h>
-#include <config.h>
+#include <board.h>
 #include <uart.h>
 #include "dev-def.h"
 

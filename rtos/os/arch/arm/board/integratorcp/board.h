@@ -16,24 +16,7 @@
  * along with ucmaze.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TICKER_H_
-#define TICKER_H_
+#ifndef BOARD_H_
+#define BOARD_H_
 
-#include <board.h>
-#include <ticker.h>
-#include "cm-reg.h"
-
-extern unsigned int jiffies;
-
-void ticker_init(uint32_t freq)
-{
-	uint32_t reload;
-
-	reload = CPU_FREQ / freq;
-
-	SYSTICK->cvr = 0x0;
-	SYSTICK->rvr = reload;
-	SYSTICK->csr |= 3; /* Enable ticker and interrupt */
-}
-
-#endif /* TICKER_H_ */
+#endif /* BOARD_H_ */
