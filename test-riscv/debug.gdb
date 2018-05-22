@@ -3,3 +3,4 @@
 
 # TODO: This still need to be tweaked a bit
 target remote localhost:3333
+set remotetimeout 240
