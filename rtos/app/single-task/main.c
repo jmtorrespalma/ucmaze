@@ -21,6 +21,7 @@
 #include <kstdio.h>
 
 /* GPIO defines */
+#define PIO_PER          ((volatile uint32_t *)0xfffff400)
 #define PIO_OER          ((volatile uint32_t *)0xfffff410)
 #define PIO_SODR         ((volatile uint32_t *)0xfffff430)
 #define PIO_CODR         ((volatile uint32_t *)0xfffff434)
@@ -40,28 +41,27 @@ int toggle_led(int argc, unsigned int *argv)
 	delay = argv[1];
 
 	/* Set pin as output */
-	*PIO_OER |= (1 << (pin));
+	*PIO_PER = (1 << (pin));
+	*PIO_OER = (1 << (pin));
 
 	while (1) {
-		*PIO_SODR |= 1 << pin;
+		*PIO_SODR = (1 << pin);
 		for (int i = 0; i < delay; ++i);
-		*PIO_CODR |= 1 << pin;
+		*PIO_CODR = (1 << pin);
 		for (int i = 0; i < delay; ++i);
 	}
 }
 
 int main(void)
 {
-	char msg[] = "Welcome to ucmaze-os, main() exiting";
+	char msg[] = "Welcome to ucmaze";
 
 	/* Create both threads */
-	//task_create(20, toggle_led, 2, argv_green);
-	//task_create(20, toggle_led, 2, argv_blue);
+	task_create(20, toggle_led, 2, argv_green);
+	task_create(20, toggle_led, 2, argv_yellow);
 
 	/* Test stdout */
 	kputs(msg);
-
-	toggle_led(2, argv_green);
 
 	return 0;
 }
