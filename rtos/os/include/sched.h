@@ -22,6 +22,11 @@
 #include <stdint.h>
 #include <util/list.h>
 
+#define PRIO_MAX 0u
+#define PRIO_MIN 255u
+#define TID_MIN  0u
+#define TID_MAX  255u
+
 enum task_state {
 	TASK_FINISHED = 0,
 	TASK_READY,

@@ -38,7 +38,7 @@ extern struct sched_rq sys_rq;
 /*
  * Memory block to allocate new tasks.
  */
-MBLOCK_DECLARE(task_mem, struct task, TASK_N_MAX);
+MBLOCK_DECLARE(task_mem, struct task, CONFIG_TASK_N_MAX);
 
 /*
  * Handle in kernel container of tasks.
@@ -99,16 +99,16 @@ void task_unlink(struct task *t)
 /*
  * Initialized to zero.
  */
-uint8_t ustack_tracker[TASK_N_MAX];
+uint8_t ustack_tracker[CONFIG_TASK_N_MAX];
 extern char _ustack_top;
 
 void ustack_assign(struct ustack *us)
 {
 	char *ustack_ptr = &_ustack_top; /* Accessing linker symbol */
 
-	for (int i = 0; i < TASK_N_MAX; ++i)
+	for (int i = 0; i < CONFIG_TASK_N_MAX; ++i)
 		if (ustack_tracker[i] == 0) {
-			us->top = ustack_ptr - STACK_SZ * i;
+			us->top = ustack_ptr - CONFIG_STACK_SZ * i;
 			ustack_tracker[i] = 1;
 			break;
 		}
@@ -117,7 +117,7 @@ void ustack_assign(struct ustack *us)
 void ustack_release(struct ustack *us)
 {
 	char *ustack_ptr = &_ustack_top;
-	int i = (int)(ustack_ptr - (char*)us->top) / STACK_SZ;
+	int i = (int)(ustack_ptr - (char*)us->top) / CONFIG_STACK_SZ;
 
 	ustack_tracker[i] = 0;
 }
