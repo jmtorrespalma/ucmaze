@@ -21,3 +21,4 @@ CPU := cortex-m0
 SOC := stm32f051
 BOARD := stm32f0discovery
 CROSS_COMPILE := arm-none-eabi
+CONNECT_CFG := board/stm32f0discovery.cfg
