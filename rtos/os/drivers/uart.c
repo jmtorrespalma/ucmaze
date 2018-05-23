@@ -19,25 +19,54 @@
 #include <errno.h>
 #include <soc-stubs.h>
 #include <uart.h>
+#include <util/rbuf.h>
 
-int uart_send_byte(struct uart_dev *d, uint8_t b)
+/*
+ * Sends a single byte.
+ */
+int uart_send_byte(struct uart_dev *d, uint8_t b, int mode)
 {
-	if (!(d->conf.status & UART_STATUS_EN))
+	if (UART_DEV_OFF(d))
 		return -EINVAL;
 
-	return _soc_uart_send_byte(d, b);
+	if (mode == BLOCK)
+		while (!_soc_uart_tx_empty(d));
+	else
+		if (!_soc_uart_tx_empty(d))
+			return -EBUSY;
+
+	_soc_uart_write_byte(d, b);
+
+	if (mode == BLOCK)
+		while (!_soc_uart_tx_finished(d));
+
+	return 0;
 }
 
-int uart_read_byte(struct uart_dev *d, uint8_t *b)
+/*
+ * Receives a single byte.
+ */
+int uart_receive_byte(struct uart_dev *d, uint8_t *b, int mode)
 {
-	if (!(d->conf.status & UART_STATUS_EN))
+	if (UART_DEV_OFF(d))
 		return -EINVAL;
 
-	return _soc_uart_read_byte(d, b);
+	if (mode == BLOCK)
+		while (_soc_uart_rx_empty(d));
+	else
+		if (_soc_uart_rx_empty(d))
+			return -EAGAIN;
+
+	_soc_uart_read_byte(d, b);
+
+	return 0;
 }
 
 int uart_set_config(struct uart_dev *d, struct uart_conf *c)
 {
+	if (UART_CONF_IRQ_ON(c) && d->type == UART_BASIC)
+		return -EINVAL;
+
 	return _soc_uart_set_config(d, c);
 }
 
@@ -48,3 +77,28 @@ int uart_get_config(struct uart_dev *d, struct uart_conf *c)
 
 	return 0;
 }
+
+/*
+ * Called when a receive interrupt happens to uart.
+ */
+//int uart_receive_handler(struct uart_dev *d)
+//{
+//	uint8_t c;
+//	int rv;
+//
+//	if (d->type != UART_TRINTS)
+//		return -EINVAL;
+//
+//	_soc_uart_receive_byte(d, &c);
+//	rbuf_push(r->rcv_buf, &c);
+//
+//	if (rbuf_full(r->rcv_buf))
+//		_soc_uart_int_ctl(UART_IRQ_RX, IRQ_DIS);
+//
+//	return 0;
+//}
+//
+//int uart_send_handler(struct uart_dev *d)
+//{
+//
+//}

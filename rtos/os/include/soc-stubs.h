@@ -26,8 +26,12 @@
 
 #include <uart.h>
 
+int _soc_uart_get_config(struct uart_dev *d, struct uart_conf *c);
 int _soc_uart_set_config(struct uart_dev *d, struct uart_conf *c);
-int _soc_uart_send_byte(struct uart_dev *d, uint8_t b);
+int _soc_uart_write_byte(struct uart_dev *d, uint8_t b);
 int _soc_uart_read_byte(struct uart_dev *d, uint8_t *b);
+int _soc_uart_tx_empty(struct uart_dev *d);
+int _soc_uart_tx_finished(struct uart_dev *d);
+int _soc_uart_rx_empty(struct uart_dev *d);
 
 #endif /* SOC_STUBS_H_ */

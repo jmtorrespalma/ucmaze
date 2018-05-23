@@ -27,7 +27,7 @@ int kgetchar(void)
 	int rv;
 	uint8_t r;
 
-	rv = uart_read_byte(&uart_std, &r);
+	rv = uart_receive_byte(&uart_std, &r, BLOCK);
 	if (rv)
 		return EOF;
 
@@ -38,7 +38,7 @@ int kputchar(int c)
 {
 	int rv;
 
-	rv = uart_send_byte(&uart_std, (uint8_t)c);
+	rv = uart_send_byte(&uart_std, (uint8_t)c, BLOCK);
 	if (rv)
 		return EOF;
 
@@ -51,7 +51,7 @@ char *kgets(char *str)
 	int rv;
 
 	do {
-		rv = uart_read_byte(&uart_std, &r);
+		rv = uart_receive_byte(&uart_std, &r, BLOCK);
 		*str++ = (char)r;
 	} while (r != '\n' && !rv);
 
@@ -70,13 +70,13 @@ int kputs(const char *str)
 
 	do {
 		r = (uint8_t)*str++;
-		rv = uart_send_byte(&uart_std, r);
+		rv = uart_send_byte(&uart_std, r, BLOCK);
 	} while (r != '\0' && !rv);
 
 	if (rv)
 		return EOF;
 
-	rv = uart_send_byte(&uart_std, '\n');
+	rv = uart_send_byte(&uart_std, '\n', BLOCK);
 	if (rv)
 		return EOF;
 

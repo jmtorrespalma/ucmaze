@@ -36,16 +36,13 @@ void stm32_usart_disable(volatile struct stm32_usart *u)
 	u->cr1 &= ~(0xd);
 }
 
-void stm32_usart_send_byte(volatile struct stm32_usart *u, uint8_t b)
+void stm32_usart_write_byte(volatile struct stm32_usart *u, uint8_t b)
 {
-	while (!TX_EMPTY(u));
 	u->tdr = b;
-	while (!TX_SENT(u));
 }
 
 uint8_t stm32_usart_read_byte(volatile struct stm32_usart *u)
 {
-	while (!RX_NEMPTY(u));
 	return u->rdr;
 }
 
@@ -62,11 +59,11 @@ void stm32_usart_set_baudrate(volatile struct stm32_usart *u,
 /*
  * Stubs for kernel implementation
  */
-int _soc_uart_send_byte(struct uart_dev *d, uint8_t b)
+int _soc_uart_write_byte(struct uart_dev *d, uint8_t b)
 {
 	volatile struct stm32_usart *lld = uart2usart(d);
 
-	stm32_usart_send_byte(lld, b);
+	stm32_usart_write_byte(lld, b);
 
 	return 0;
 }
@@ -93,8 +90,26 @@ int _soc_uart_set_config(struct uart_dev *d, struct uart_conf *c)
 	d->conf.status = c->status;
 	d->conf.baudrate = c->baudrate;
 
-	if ((c->status & UART_STATUS_EN))
+	if ((c->status & UART_ENABLE))
 		stm32_usart_enable(lld);
 
 	return 0;
+}
+
+int _soc_uart_tx_empty(struct uart_dev *d)
+{
+	volatile struct stm32_usart *lld = uart2usart(d);
+	return TX_EMPTY(lld);
+}
+
+int _soc_uart_tx_finished(struct uart_dev *d)
+{
+	volatile struct stm32_usart *lld = uart2usart(d);
+	return TX_SENT(lld);
+}
+
+int _soc_uart_rx_empty(struct uart_dev *d)
+{
+	volatile struct stm32_usart *lld = uart2usart(d);
+	return (!RX_NEMPTY(lld));
 }
