@@ -18,7 +18,7 @@
 
 #include <config.h>
 #include <sched.h>
-#include <irq.h>
+#include <syscall-sys.h>
 #include <ucmaze-os.h>
 #include <util/list.h>
 #include <util/mblock.h>

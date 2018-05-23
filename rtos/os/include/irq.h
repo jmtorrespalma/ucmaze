@@ -19,7 +19,4 @@
 #ifndef IRQ_H_
 #define IRQ_H_
 
-unsigned int sys_irq_lock(void);
-void sys_irq_unlock(unsigned int key);
-
 #endif /* IRQ_H_ */

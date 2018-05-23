@@ -66,3 +66,25 @@ void task_yield(void)
 {
 	__asm__ volatile("svc #" _xstr(SC_TASK_YIELD) ";":::);
 }
+
+int irq_lock(void)
+{
+	int lock;
+
+	__asm__ volatile("svc #" _xstr(SC_IRQ_LOCK) ";"
+		"mov %0, r0"
+		: "=r" (lock)
+		:
+		:);
+
+	return lock;
+}
+
+void irq_unlock(int lock)
+{
+	__asm__ volatile("mov r0, %0;"
+		"svc #" _xstr(SC_IRQ_UNLOCK)
+		:
+		: "r" (lock)
+		:);
+}

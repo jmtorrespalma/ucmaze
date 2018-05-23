@@ -17,7 +17,7 @@
  */
 
 #include <sched.h>
-#include <irq.h>
+#include <syscall-sys.h>
 
 /*
  * System runqueue

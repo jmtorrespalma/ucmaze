@@ -16,7 +16,7 @@
  * along with ucmaze.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <irq.h>
+#include <syscall-sys.h>
 #include <dev.h>
 #include <ticker.h>
 #include <sched.h>

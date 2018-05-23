@@ -25,11 +25,15 @@
 #define SC_TASK_CREATE  1
 #define SC_TASK_EXIT    2
 #define SC_TASK_YIELD   3
-#define SYSCALL_MAX     4
+#define SC_IRQ_LOCK     4
+#define SC_IRQ_UNLOCK   5
+#define SYSCALL_MAX     6
 
-int sys_os_init(void);
+void sys_os_init(void);
 int sys_task_create(int prio, void *entry, int argc, void *argv);
-void sys_task_exit(int exit_code);
+int sys_task_exit(int exit_code);
 void sys_task_yield(void);
+int sys_irq_lock(void);
+void sys_irq_unlock(int key);
 
 #endif /* SYSCALL_SYS_H_ */

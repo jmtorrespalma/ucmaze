@@ -44,6 +44,12 @@ int syscall_handler(uint32_t sc_num, uint32_t p1, uint32_t p2,
 	case SC_TASK_YIELD:
 		sys_task_yield();
 		break;
+	case SC_IRQ_LOCK:
+		rv = sys_irq_lock();
+		break;
+	case SC_IRQ_UNLOCK:
+		sys_irq_unlock((int)p1);
+		break;
 	}
 
 	return rv;
