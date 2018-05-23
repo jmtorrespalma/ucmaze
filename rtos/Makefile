@@ -52,14 +52,15 @@ VERSION := v0.1
 ROOT_DIR := .
 OS_DIR := $(ROOT_DIR)/os
 APP_DIR := $(ROOT_DIR)/app/$(APP)
-KSRCD := include sched init util drivers dev io syscall
+LIBC_DIR := $(ROOT_DIR)/klibc
+KSRCD := include sched init util drivers dev syscall
 KERNEL_DIRS := $(foreach dir, $(KSRCD), $(OS_DIR)/$(dir))
 DEBUG_DIR := $(OS_DIR)/debug
 BOARD_DIR := $(OS_DIR)/arch/$(ARCH)/board/$(BOARD)
 CPU_DIR := $(OS_DIR)/arch/$(ARCH)/cpu/$(CPU)
 SOC_DIR := $(OS_DIR)/arch/$(ARCH)/soc/$(SOC)
 K_SRC_DIRS := $(KERNEL_DIRS) $(BOARD_DIR) $(CPU_DIR) $(SOC_DIR)
-A_SRC_DIRS := $(APP_DIR)
+A_SRC_DIRS := $(APP_DIR) $(LIBC_DIR)
 
 # Kernel files
 K_SRC := $(shell find $(K_SRC_DIRS) -name "*.c")
@@ -77,6 +78,11 @@ A_OBJ := $(A_SRC:.c=.o) $(A_ASRC:.S=.o)
 # Include toolchain definitions
 include os/conf/toolchain/$(TOOLCHAIN)/common.mk
 
+# Add klibc path to includes
+# FIXME: this should be somewhere else.
+
+CFLAGS += -I$(LIBC_DIR)/include
+
 # Implicit rules
 %.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@
@@ -85,6 +91,7 @@ include os/conf/toolchain/$(TOOLCHAIN)/common.mk
 	$(CC) -c $(ASFLAGS) $< -o $@
 
 %.elf: $(A_OBJ) $(KLIB)
+
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 %.bin: %.elf
