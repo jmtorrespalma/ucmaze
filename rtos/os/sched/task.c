@@ -81,24 +81,6 @@ uint8_t tid_generate(void)
 }
 
 /*
- * Every task when running for the first time starts with this code. That is
- * done in a way that we can assure it will release resources after finishing
- * its function.
- *
- * Note that this code runs in userspace! Technically should be part of a C
- * library.
- */
-void task_start(int (*code)(int, void *), int argc, void *argv)
-{
-	int rv;
-
-	rv = code(argc, argv);
-
-	/* Syscall to release resources */
-	task_exit(rv);
-}
-
-/*
  * Add new task to task_list
  */
 void task_link(struct task *t)

@@ -89,10 +89,11 @@ void sched_new_cycle(struct sched_rq *rq);
 int sched_cycle_over(struct sched_rq *rq);
 
 /*
+ * Entry point of new tasks. This function is defined by the C library.
  * Wrapper around threads main function, used to setup the environment before,
  * and the cleanup after finishing.
  */
-void task_start(int (*code)(int, void *), int argc, void *argv);
+extern void task_start(int (*code)(int, void *), int argc, void *argv);
 
 /*
  * Architecture dependent functions that setup data in a format expected by the
