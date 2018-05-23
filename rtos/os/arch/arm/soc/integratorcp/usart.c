@@ -27,11 +27,10 @@
 /*
  * Stubs for kernel implementation
  */
-int _soc_uart_send_byte(struct uart_dev *d, uint8_t b)
+int _soc_uart_write_byte(struct uart_dev *d, uint8_t b)
 {
-	struct icp_uart *iu = uart2icp_uart(d);
+	volatile struct icp_uart *iu = uart2icp_uart(d);
 
-	while (ICP_UART_FULL(iu));
 	iu->dr = b;
 
 	return 0;
@@ -39,28 +38,45 @@ int _soc_uart_send_byte(struct uart_dev *d, uint8_t b)
 
 int _soc_uart_read_byte(struct uart_dev *d, uint8_t *b)
 {
-	struct icp_uart *iu = uart2icp_uart(d);
+	volatile struct icp_uart *iu = uart2icp_uart(d);
 
-	while (ICP_UART_FULL(iu));
 	*b = iu->dr ;
 
 	return 0;
 }
 
 /*
- * Default configuration:
- * - br: 9600 baud
- * - data: 8b
- * - parity: none
- * - stop: 1b
- * - flow: none
+ *
  */
 int _soc_uart_set_config(struct uart_dev *d, struct uart_conf *c)
 {
-	struct icp_uart *iu = uart2icp_uart(d);
+	volatile struct icp_uart *iu = uart2icp_uart(d);
 
+	(void)iu;
 	d->conf.status = c->status;
 	d->conf.baudrate = c->baudrate;
 
 	return 0;
+}
+
+int _soc_uart_tx_empty(struct uart_dev *d)
+{
+	volatile struct icp_uart *iu = uart2icp_uart(d);
+	return (!ICP_UART_FULL(iu));
+}
+
+/*
+ * Sends instantly, it's an emulator.
+ */
+int _soc_uart_tx_finished(struct uart_dev *d)
+{
+	volatile struct icp_uart *iu = uart2icp_uart(d);
+	(void)iu;
+	return 1;
+}
+
+int _soc_uart_rx_empty(struct uart_dev *d)
+{
+	volatile struct icp_uart *iu = uart2icp_uart(d);
+	return (!ICP_UART_FULL(iu));
 }

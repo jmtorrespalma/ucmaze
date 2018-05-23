@@ -25,7 +25,7 @@
  */
 struct uart_dev uart_std = {
 	.id = (int) UART0_BASE,
-	.type = UART_TRINTS,
+	.type = UART_TRX_ASYNC,
 	.conf = {
 		.status = 0,
 		.baudrate = 0
