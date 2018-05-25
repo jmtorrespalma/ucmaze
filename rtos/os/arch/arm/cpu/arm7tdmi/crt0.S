@@ -91,7 +91,7 @@ _start:
 	bl	soc_init /* Does stack init, remapping, etc */
 	bl	cpu_init
 	bl	board_init /* Initialize board components */
-	bl	os_init
+	bl	_system_start
 	b	.
 
         .size   _start, . - _start

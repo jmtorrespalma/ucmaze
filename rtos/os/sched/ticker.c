@@ -17,7 +17,7 @@
  */
 
 #include <sched.h>
-#include <syscall-sys.h>
+#include <irq.h>
 
 /*
  * System runqueue
@@ -38,7 +38,7 @@ void ticker_handler(void)
 {
 	int key;
 
-	key = sys_irq_lock();
+	key = k_lock();
 
 	sched_update(&sys_rq);
 
@@ -46,5 +46,5 @@ void ticker_handler(void)
 		sched_schedule(&sys_rq);
 
 	++jiffies;
-	sys_irq_unlock(key);
+	k_unlock(key);
 }

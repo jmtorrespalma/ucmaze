@@ -21,7 +21,11 @@
 
 #include <ucmaze-os.h>
 
-#define SC_OS_INIT      0
+/*
+ * Number zero is reserved for kernel internal implementation, using it will
+ * cause nothing but trouble.
+ */
+#define SC_RESERVED     0
 #define SC_TASK_CREATE  1
 #define SC_TASK_EXIT    2
 #define SC_TASK_YIELD   3
@@ -29,9 +33,11 @@
 #define SC_IRQ_UNLOCK   5
 #define SYSCALL_MAX     6
 
-void sys_os_init(void);
+/*
+ * Implementation for every syscall.
+ */
 int sys_task_create(int prio, void *entry, int argc, void *argv);
-int sys_task_exit(int exit_code);
+void sys_task_exit(int exit_code);
 void sys_task_yield(void);
 int sys_irq_lock(void);
 void sys_irq_unlock(int key);

@@ -63,7 +63,7 @@ _syscall_handler:
 	beq	0f
 
 	/*
-	 * Regular syscall, might set r0
+	 * Regular syscall
 	 */
 	cpsie	i
 	blx	syscall_handler

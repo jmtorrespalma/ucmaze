@@ -54,11 +54,23 @@ _svc_handler:
 	mov	r1, r0
 	ldrb	r0, [lr, #-4] /* lr does not need adjustment */
 
-	/* Call kernel generic syscall */
-	bl	syscall_handler
-	pop	{r7, lr}
+	/*
+	 * Go for system initialization or generic syscall.
+	 */
+	cmp	r0, #0
+	bne	0f
+	bl	system_start
+	b	1f
 
+	/*
+	 * Kernel syscall.
+	 */
+0:
+	bl	syscall_handler
+
+1:
 	/* Restore context */
+	pop	{r7, lr}
 	msr	cpsr_c, #(SYS_MASK | F_BIT | I_BIT)
 	ldr	lr, [sp, #60] /* Loads usermode lr */
 	mov	r0, sp

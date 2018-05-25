@@ -24,13 +24,12 @@
 #define _xstr(_a) _str(_a)
 
 /*
- * Used because on cortex-m0 we start in non-privileged mode, so we need to
- * switch to privileged mode using svc and initialize all kernel data
- * structures.
+ * This is not a syscall, but a fixup due to ARM cores starting in
+ * non-privileged mode.
  */
-void __attribute__((noreturn, naked)) os_init(void)
+void __attribute__((noreturn, naked)) _system_start(void)
 {
-	__asm__ volatile("svc #" _xstr(SC_OS_INIT) ";" :::);
+	__asm__ volatile("svc #" _xstr(SC_RESERVED) ";" :::);
 	__builtin_unreachable();
 }
 

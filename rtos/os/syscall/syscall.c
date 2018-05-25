@@ -21,22 +21,23 @@
 #include <stdint.h>
 
 /*
+ * We need to somehow pass the return value to userspace, so syscall_retval()
+ * writes that value wherever the application will be expecting it.
+ */
+extern void syscall_retval(int rv);
+
+/*
  * High level syscall handler, we support up to 4 parameters.
  */
-int syscall_handler(uint32_t sc_num, uint32_t p1, uint32_t p2,
-		    uint32_t p3, uint32_t p4)
+void syscall_handler(uint32_t sc_num, uint32_t p1, uint32_t p2,
+		     uint32_t p3, uint32_t p4)
 {
-	int rv = -EINVAL;
-
-	if (sc_num >= SYSCALL_MAX)
-		return rv;
+	int rv = 0;
 
 	switch (sc_num) {
-	case SC_OS_INIT:
-		sys_os_init();
-		break;
 	case SC_TASK_CREATE:
 		rv = sys_task_create((int)p1, (void *)p2, (int)p3, (void *)p4);
+		syscall_retval(rv);
 		break;
 	case SC_TASK_EXIT:
 		sys_task_exit((int)p1);
@@ -46,11 +47,13 @@ int syscall_handler(uint32_t sc_num, uint32_t p1, uint32_t p2,
 		break;
 	case SC_IRQ_LOCK:
 		rv = sys_irq_lock();
+		syscall_retval(rv);
 		break;
 	case SC_IRQ_UNLOCK:
 		sys_irq_unlock((int)p1);
 		break;
+	default:
+		while (1); /* TODO: Assert somehow */
+		break;
 	}
-
-	return rv;
 }

@@ -17,6 +17,7 @@
  */
 
 #include <config.h>
+#include <irq.h>
 #include <sched.h>
 #include <syscall-sys.h>
 #include <ucmaze-os.h>
@@ -131,7 +132,7 @@ int sys_task_create(int prio, void *entry, int argc, void *argv)
 	uint8_t id;
 	int key;
 
-	key = sys_irq_lock();
+	key = k_lock();
 
 	new = task_alloc();
 	if (!new)
@@ -156,7 +157,7 @@ int sys_task_create(int prio, void *entry, int argc, void *argv)
 
 	task_link(new); /* Adds it to task_list */
 
-	sys_irq_unlock(key);
+	k_unlock(key);
 
 	return 0;
 }
@@ -165,12 +166,17 @@ int sys_task_create(int prio, void *entry, int argc, void *argv)
  * Removes current thread and releases resources.
  * Called from a low level handler.
  */
-int sys_task_exit(int exit_code)
+void sys_task_exit(int exit_code)
 {
 	int key;
 	struct task *curr, *next;
 
-	key = sys_irq_lock();
+	key = k_lock();
+
+	/*
+	 * TODO: write the exit_code to a joined thread.
+	 */
+	(void)exit_code;
 
 	/* Remove all links of the task in the kernel */
 	curr = sched_get_current(&sys_rq);
@@ -187,9 +193,7 @@ int sys_task_exit(int exit_code)
 	sched_set_current(&sys_rq, next);
 	context_fake(&next->stack); /* Low level magic */
 
-	sys_irq_unlock(key);
-
-	return exit_code;
+	k_unlock(key);
 }
 
 /*
@@ -200,9 +204,9 @@ void sys_task_yield(void)
 {
 	int key;
 
-	key = sys_irq_lock();
+	key = k_lock();
 
 	sched_schedule(&sys_rq);
 
-	sys_irq_unlock(key);
+	k_unlock(key);
 }

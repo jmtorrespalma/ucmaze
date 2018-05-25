@@ -16,40 +16,26 @@
  * along with ucmaze.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <irq.h>
-#include <dev.h>
-#include <ticker.h>
-#include <sched.h>
+#include "arm-reg.h"
 
-extern void cpu_init(void);
-extern void soc_init(void);
-extern void board_init(void);
+#define R0_OFF 8
 
+	.syntax unified
+	.code 32
+
+	.section .text, "ax"
+	.global syscall_retval
+	.func   syscall_retval
 /*
- * This needs to run in privileged mode.
- * Takes care of initializating all kernel data structures.
- * Add default tasks, select initial task and switch on the system
- * devices so we can start running userspace tasks.
+ * This is called by syscalls that need to return a value to the userspace,
+ * so we need to write to the stacked r0, so the ABI will pickup the value as
+ * expected.
  */
-void os_init(void)
-{
-	/*
-	 */
-	sched_init();
-	dev_init();
-}
+syscall_retval:
+	msr	cpsr_c, #(SYS_MASK | F_BIT | I_BIT)
+	str	r0, [sp, #R0_OFF]
+	msr	cpsr_c, #(SVC_MASK | F_BIT | I_BIT)
+	bx	lr
 
-/*
- * Called from the reset handler.
- * On return it should typically start running the very first task and never be
- * called again unless very specific situations (deep sleep wakeup).
- */
-void system_start(void)
-{
-	int key;
-	key = k_lock();
-
-	os_init();
-
-	k_unlock(key);
-}
+        .size   syscall_retval, . - syscall_retval
+        .endfunc

@@ -76,14 +76,38 @@ _irq_handler:
         .endfunc
 
 /*
- * Routines for interrupt lock and unlock
+ * Routines for interrupt lock and unlock.
+ * The kernel always runs locked for this cpu, so
+ * k_lock() and k_unlock() do nothing.
+ */
+	.global k_lock
+	.func   k_lock
+k_lock:
+	mov	r0, #0
+	bx	lr
+
+        .size   k_lock, . - k_lock
+        .endfunc
+
+	.global k_unlock
+	.func   k_unlock
+k_unlock:
+	bx	lr
+
+        .size   k_unlock, . - k_unlock
+        .endfunc
+
+/*
+ * Syscall implementation to modify lock or unlock interrupts.
  */
 	.global sys_irq_lock
 	.func   sys_irq_lock
 sys_irq_lock:
-	mrs	r0, cpsr
-	bic	r1, r0, #(F_BIT | I_BIT)
-	msr	cpsr_c, r1
+	msr	cpsr_c, #(SYS_MASK | F_BIT | I_BIT)
+	ldr	r0, [sp]
+	orr	r1, r0, #(F_BIT | I_BIT)
+	str	r1, [sp]
+	msr	cpsr_c, #(SVC_MASK | F_BIT | I_BIT)
 	bx	lr
 
         .size   sys_irq_lock, . - sys_irq_lock
@@ -92,7 +116,9 @@ sys_irq_lock:
 	.global sys_irq_unlock
 	.func   sys_irq_unlock
 sys_irq_unlock:
-	msr	cpsr_c, r0
+	msr	cpsr_c, #(SYS_MASK | F_BIT | I_BIT)
+	str	r0, [sp]
+	msr	cpsr_c, #(SVC_MASK | F_BIT | I_BIT)
 	bx	lr
 
         .size   sys_irq_unlock, . - sys_irq_unlock

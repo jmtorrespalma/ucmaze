@@ -19,4 +19,7 @@
 #ifndef IRQ_H_
 #define IRQ_H_
 
+int k_lock(void);
+void k_unlock(int key);
+
 #endif /* IRQ_H_ */
