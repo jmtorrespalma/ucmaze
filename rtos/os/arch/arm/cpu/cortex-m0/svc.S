@@ -23,6 +23,7 @@
  * -Rearrange return values.
  */
 
+#define SC_RESERVED  0
 #define SC_TASK_EXIT 2
 
 	.syntax unified
@@ -38,7 +39,7 @@ _syscall_handler:
 	 * svc number.
 	 */
 	cpsid	i
-	sub	sp, sp, #12       /* Temporary variables */
+	sub	sp, sp, #16       /* Temporary variables */
 	str	r3, [sp]
 	str	r4, [sp, #4]
 	mov	r3, lr
@@ -59,8 +60,13 @@ _syscall_handler:
 	mov	r3, r2
 	mov	r2, r4 /* Old r1 */
 
-	cmp	r0, #SC_TASK_EXIT
+	/*
+	 * Syscall check
+	 */
+	cmp	r0, #SC_RESERVED
 	beq	0f
+	cmp	r0, #SC_TASK_EXIT
+	beq	1f
 
 	/*
 	 * Regular syscall
@@ -70,10 +76,19 @@ _syscall_handler:
 	ldr	r1, [sp, #8]
 	mov	lr, r1
 	ldr	r4, [sp, #4]
-	add	sp, sp, #12
+	add	sp, sp, #16
 	bx	lr
 
+	/*
+	 * Startup system
+	 */
 0:
+	blx	system_start
+	add	sp, sp, #16
+	cpsie	i
+	bx	lr
+
+1:
 	/*
 	 * task_exit() handler, runs locked all the way and needs exit glue
 	 * code to restore newly selected task context.
@@ -91,7 +106,7 @@ _syscall_handler:
 	mov	r11, r7
 	subs	r0, r0, #32
 	stmia	r0!, {r4-r7}
-	add	sp, sp, #12
+	add	sp, sp, #16
 	cpsie	i
 	bx	lr
 

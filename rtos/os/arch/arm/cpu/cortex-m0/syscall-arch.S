@@ -16,38 +16,20 @@
  * along with ucmaze.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+	.syntax unified
+	.thumb
+
+	.section .text, "ax"
+	.global syscall_retval
+	.func   syscall_retval
+	.thumb_func
 /*
- * System call to temporarily disable interrupts.
- * In cortex-m0, we actually disable all exceptions, but those unmaskable.
- * If previously disabled, will return value different to zero.
+ * psp is pointing to the stacked r0, so we just need to write there.
  */
-int sys_irq_lock(void)
-{
-	unsigned int key;
+syscall_retval:
+	mrs	r1, psp
+	str	r0, [r1]
+	bx	lr
 
-	__asm__ volatile("mrs %0, PRIMASK;"
-		"cpsid i"
-		: "=r" (key)
-		:
-		: "memory");
-
-	return key;
-}
-
-/*
- * Restaurates previous interrupt status.
- * If key is different to zero, exceptions were off before us.
- */
-void sys_irq_unlock(int key)
-{
-
-	if (key)
-		return;
-
-	__asm__ volatile("cpsie i" : : : "memory");
-}
-
-int k_lock(void) __attribute__ ((__alias__("sys_irq_lock")));
-void k_unlock(int key) __attribute__ ((__alias__("sys_irq_unlock")));
-
-
+        .size   syscall_retval, . - syscall_retval
+        .endfunc

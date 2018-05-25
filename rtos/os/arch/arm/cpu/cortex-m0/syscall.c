@@ -29,9 +29,9 @@
  * switch to privileged mode using svc and initialize all kernel data
  * structures.
  */
-void __attribute__((noreturn, naked)) os_init(void)
+void __attribute__((noreturn, naked)) _system_start(void)
 {
-	__asm__ volatile("svc #" _xstr(SC_OS_INIT) ";" :::);
+	__asm__ volatile("svc #" _xstr(SC_RESERVED) ";" :::);
 	__builtin_unreachable();
 }
 
@@ -67,24 +67,17 @@ void task_yield(void)
 	__asm__ volatile("svc #" _xstr(SC_TASK_YIELD) ";":::);
 }
 
+/*
+ * In cortex-m0 we can't implement irq_unlock as a syscall since once
+ * interrupts are locked, we can't use svc instructions.
+ * Implementation simply sets or reads the PRIMASK register.
+ */
 int irq_lock(void)
 {
-	int lock;
-
-	__asm__ volatile("svc #" _xstr(SC_IRQ_LOCK) ";"
-		"mov %0, r0"
-		: "=r" (lock)
-		:
-		:);
-
-	return lock;
+	return sys_irq_lock();
 }
 
 void irq_unlock(int lock)
 {
-	__asm__ volatile("mov r0, %0;"
-		"svc #" _xstr(SC_IRQ_UNLOCK)
-		:
-		: "r" (lock)
-		:);
+	sys_irq_unlock(lock);
 }
