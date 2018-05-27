@@ -84,7 +84,9 @@ _syscall_handler:
 	 */
 0:
 	blx	system_start
+	ldr	r1, [sp, #8]
 	add	sp, sp, #16
+	mov	lr, r1
 	cpsie	i
 	bx	lr
 
