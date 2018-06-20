@@ -1,0 +1,25 @@
+cortex-m0
+---------
+-Starts in user context, so we require a svc call.
+-Does support nested interrupts.
+-Context switch is implemented at low priority with pendsv.
+-Fast system calls.
+-Userspace locks are not (cannot be) syscalls.
+
+arm7tdmi
+--------
+-Starts in fake user mode, so we jump to kernel mode with a svc.
+-Kernel code is non-preemtive, so all runs locked at processor level.
+-Context switch is performed at high priority, on ticker handler.
+-Task context is saved on the task stack.
+-Userspace locks need to be syscalls.
+-Expensive syscalls (save and restore whole context).
+
+riscv32
+-------
+-Only machine mode supported.
+-No float point support.
+
+
+All handlers are initially implemented in asm to allow context saving and
+accessing parameters.
