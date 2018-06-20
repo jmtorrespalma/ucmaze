@@ -21,10 +21,6 @@
 #include <ticker.h>
 #include <sched.h>
 
-extern void cpu_init(void);
-extern void soc_init(void);
-extern void board_init(void);
-
 /*
  * This needs to run in privileged mode.
  * Takes care of initializating all kernel data structures.
