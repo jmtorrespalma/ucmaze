@@ -19,9 +19,7 @@
 #include <stdint.h>
 #include <ucmaze-os.h>
 #include <syscall-sys.h>
-
-#define _str(_a) #_a
-#define _xstr(_a) _str(_a)
+#include <util/util.h>
 
 /*
  * This is not a syscall, but a fixup due to ARM cores starting in

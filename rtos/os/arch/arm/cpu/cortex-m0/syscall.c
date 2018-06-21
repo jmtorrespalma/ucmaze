@@ -20,9 +20,7 @@
 #include <errno.h>
 #include <ucmaze-os.h>
 #include <syscall-sys.h>
-
-#define _str(_a) #_a
-#define _xstr(_a) _str(_a)
+#include <util/util.h>
 
 /*
  * Used because on cortex-m0 we start in non-privileged mode, so we need to

@@ -22,4 +22,10 @@
 #define container_of(ptr, type, field) \
 	((type *)(((char *)(ptr)) - offsetof(type, field)))
 
+/*
+ * Used to stringify values. To stringify macro contents use _xstr().
+ */
+#define _str(_a) #_a
+#define _xstr(_a) _str(_a)
+
 #endif /* UTIL_H_ */
